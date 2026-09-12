@@ -1,0 +1,2259 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>디벗부 코딩교실</title>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body {
+    height: 100%;
+    font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
+    font-size: 17px;
+    background: #fdf6f0;
+    color: #3a3a3a;
+    -webkit-text-size-adjust: 100%;
+    overflow: hidden;
+  }
+  body { display: flex; flex-direction: column; height: 100vh; }
+
+  /* ===== 로그인 모달 ===== */
+  #login {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #ffd6c9 0%, #c9e4ff 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+  }
+  #login[hidden] { display: none !important; }
+  #login .box {
+    background: #fff;
+    padding: 40px 36px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    text-align: center;
+    max-width: 440px;
+    width: calc(100% - 40px);
+  }
+  #login h1 { font-size: 1.8em; margin-bottom: 8px; }
+  #login p { color: #7a7a7a; margin-bottom: 20px; font-size: 1em; }
+  #login input {
+    width: 100%;
+    padding: 14px 18px;
+    border: 2px solid #ffd6c9;
+    border-radius: 14px;
+    font-size: 1.05em;
+    font-family: inherit;
+    outline: none;
+    transition: border-color 0.2s;
+    margin-bottom: 10px;
+  }
+  #login input:focus { border-color: #ff8a80; }
+  #login .login-btn {
+    margin-top: 10px;
+    width: 100%;
+    padding: 14px;
+    background: #ff8a80;
+    color: #fff;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s, background 0.2s;
+  }
+  #login .login-btn:hover { background: #ff7268; }
+  #login .login-btn:active { transform: scale(0.97); }
+  #login .login-btn:disabled { opacity: 0.6; cursor: wait; }
+  #createClassBtn, #previewBtn {
+    position: absolute;
+    top: 16px;
+    background: rgba(255,255,255,0.7);
+    border: 1px solid #fff;
+    color: #7a6a5a;
+    padding: 8px 14px;
+    border-radius: 10px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+  }
+  #createClassBtn { right: 16px; }
+  #previewBtn { right: 180px; background: #fff9db; border-color: #ffe8a3; color: #a17c00; }
+  #createClassBtn:hover { background: #fff; }
+  #previewBtn:hover { background: #fff3bf; }
+  @media (max-width: 600px) {
+    #createClassBtn, #previewBtn { position: static; margin: 4px; display: inline-block; }
+    #login .box { margin-top: 60px; }
+  }
+  #previewBanner {
+    background: #fff9db;
+    color: #a17c00;
+    text-align: center;
+    padding: 8px 12px;
+    font-size: 0.9em;
+    font-weight: 700;
+    border-bottom: 1px solid #ffe8a3;
+  }
+  #previewBanner button {
+    background: #ff8a80;
+    color: #fff;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 8px;
+    margin-left: 12px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.9em;
+  }
+  #loginError {
+    color: #c92a2a;
+    font-size: 0.95em;
+    margin-top: 10px;
+    min-height: 1.2em;
+    font-weight: 600;
+  }
+
+  /* ===== 선생님 설정 화면 ===== */
+  #teacherSetup {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #d0ebff 0%, #ffd6c9 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 100;
+    overflow-y: auto;
+    padding: 20px;
+  }
+  #teacherSetup[hidden] { display: none !important; }
+  #teacherSetup .box {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    max-width: 500px;
+    width: 100%;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  #teacherSetup h1 { font-size: 1.6em; text-align: center; margin-bottom: 6px; color: #1971c2; }
+  #teacherSetup .subtitle { color: #7a7a7a; text-align: center; margin-bottom: 20px; }
+  #teacherSetup label { display: block; font-weight: 700; margin: 14px 0 6px; color: #444; font-size: 0.95em; }
+  #teacherSetup input[type=text] {
+    width: 100%;
+    padding: 12px 16px;
+    border: 2px solid #d0ebff;
+    border-radius: 12px;
+    font-size: 1em;
+    font-family: inherit;
+    outline: none;
+  }
+  #teacherSetup input[type=text]:focus { border-color: #74c0fc; }
+  #rosterList {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin: 10px 0;
+    min-height: 30px;
+  }
+  .roster-chip {
+    background: #e7f5ff;
+    color: #1971c2;
+    padding: 6px 10px 6px 14px;
+    border-radius: 16px;
+    font-size: 0.95em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .roster-chip .remove-x {
+    background: #74c0fc;
+    color: #fff;
+    border: none;
+    width: 20px; height: 20px;
+    border-radius: 50%;
+    cursor: pointer;
+    font-size: 0.9em;
+    display: flex; align-items: center; justify-content: center;
+    padding: 0;
+    line-height: 1;
+    font-family: inherit;
+  }
+  .add-row { display: flex; gap: 8px; margin-top: 8px; }
+  .add-row input { flex: 1; }
+  .add-row button {
+    padding: 12px 20px;
+    background: #74c0fc;
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  .add-row button:hover { background: #4dabf7; }
+  #teacherSetup .footer-buttons {
+    display: flex; gap: 10px; margin-top: 20px;
+  }
+  #teacherSetup .footer-buttons button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #backToLoginBtn { background: #e9ecef; color: #495057; }
+  #createClassSubmit { background: #ff8a80; color: #fff; }
+  #createClassSubmit:disabled { opacity: 0.6; cursor: wait; }
+  #teacherSetupError { color: #c92a2a; font-size: 0.9em; margin-top: 8px; }
+
+  /* ===== 선생님 대시보드 ===== */
+  #teacherDashboard {
+    position: fixed; inset: 0;
+    background: #f7f5f2;
+    z-index: 90;
+    display: flex; flex-direction: column;
+  }
+  #teacherDashboard[hidden] { display: none !important; }
+  #teacherDashboard header {
+    background: #fff;
+    padding: 14px 24px;
+    border-bottom: 2px solid #f0e6dc;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  #teacherDashboard header h1 { font-size: 1.3em; color: #1971c2; }
+  #teacherDashboard header .info { font-size: 0.9em; color: #7a7a7a; }
+  #teacherDashboard .code-share {
+    background: #fff9db;
+    padding: 6px 12px;
+    border-radius: 8px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-weight: 700;
+    color: #a17c00;
+    border: 1px solid #ffe8a3;
+    cursor: pointer;
+  }
+  #teacherDashboard .code-share:hover { background: #fff3bf; }
+  #teacherLogoutBtn {
+    background: none; border: 1px solid #e0d5c8;
+    color: #7a6a5a; padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; font-family: inherit; font-size: 0.85em;
+  }
+  #teacherLogoutBtn:hover { background: #f7f0e8; }
+  #deleteClassBtn {
+    background: #ffe0e0; border: 1px solid #ffb3b3;
+    color: #c92a2a; padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; font-family: inherit; font-size: 0.85em;
+    font-weight: 600;
+  }
+  #deleteClassBtn:hover { background: #ffc9c9; }
+  #previewFromSetupBtn {
+    background: #fff9db !important; color: #a17c00 !important;
+  }
+  #studentGrid {
+    flex: 1;
+    padding: 16px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 14px;
+    overflow-y: auto;
+    align-content: start;
+  }
+  .student-card {
+    background: #fff;
+    border-radius: 14px;
+    padding: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+    display: flex; flex-direction: column;
+    cursor: pointer;
+    transition: transform 0.15s, box-shadow 0.15s;
+  }
+  .student-card:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.08); }
+  .student-card .top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 8px;
+  }
+  .student-card .name { font-weight: 700; font-size: 1.1em; }
+  .student-card .status {
+    font-size: 0.8em;
+    padding: 4px 10px;
+    border-radius: 12px;
+    background: #f7f0e8;
+    color: #a89a8c;
+  }
+  .student-card .status.active { background: #d3f9d8; color: #2b8a3e; }
+  .student-card .status.done { background: #a5d8ff; color: #1971c2; }
+  .student-card .stage-info { font-size: 0.85em; color: #7a7a7a; margin-bottom: 8px; }
+  .student-card iframe {
+    width: 100%; height: 150px;
+    border: 1px solid #f0e6dc;
+    border-radius: 8px;
+    background: #fff;
+    pointer-events: none;
+  }
+  .student-card .no-data {
+    height: 150px;
+    display: flex; align-items: center; justify-content: center;
+    color: #a89a8c; font-size: 0.9em;
+    background: #f7f0e8;
+    border-radius: 8px;
+    text-align: center;
+  }
+
+  /* 학생 화면 크게 보기 모달 */
+  #studentZoomModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 200;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #studentZoomModal[hidden] { display: none !important; }
+  #studentZoomModal .zoom-box {
+    background: #fff;
+    border-radius: 16px;
+    width: 100%; max-width: 900px;
+    max-height: 90vh;
+    overflow: hidden;
+    display: flex; flex-direction: column;
+  }
+  #studentZoomModal .zoom-header {
+    padding: 14px 20px;
+    background: #f7f0e8;
+    display: flex; justify-content: space-between; align-items: center;
+    border-bottom: 1px solid #e0d5c8;
+  }
+  #studentZoomModal .zoom-header h3 { font-size: 1.2em; }
+  #studentZoomModal .close-x {
+    background: #fff;
+    border: 1px solid #e0d5c8;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+  }
+  #studentZoomModal .zoom-body {
+    padding: 16px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    overflow: auto;
+  }
+  #studentZoomModal .code-panel {
+    background: #fef9f4;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 500px;
+    overflow-y: auto;
+    color: #444;
+  }
+  #studentZoomModal .preview-panel iframe {
+    width: 100%; height: 500px;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+  }
+  @media (max-width: 700px) {
+    #studentZoomModal .zoom-body { grid-template-columns: 1fr; }
+  }
+
+  /* ===== 앱 헤더 ===== */
+  header {
+    background: #fff;
+    padding: 14px 24px;
+    border-bottom: 2px solid #f0e6dc;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  #saveInfo {
+    width: 100%;
+    text-align: center;
+    background: #fff9db;
+    color: #a17c00;
+    font-size: 0.88em;
+    padding: 6px 12px;
+    border-bottom: 1px solid #ffe8a3;
+  }
+  header h1 { font-size: 1.4em; color: #ff8a80; }
+  #progress { display: flex; gap: 10px; flex-wrap: wrap; font-size: 0.9em; }
+  #progress .step {
+    padding: 6px 12px;
+    background: #f7f0e8;
+    border-radius: 20px;
+    color: #a89a8c;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  #progress .step.active {
+    background: #ff8a80;
+    color: #fff;
+    font-weight: 700;
+  }
+  #progress .step.done {
+    background: #95d5b2;
+    color: #fff;
+  }
+  #progress .step.locked {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  /* ===== 메인 3분할 ===== */
+  main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 32% 34% 34%;
+    gap: 12px;
+    padding: 12px;
+    min-height: 0;
+  }
+  main > section, main > aside {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column;
+    min-height: 0;
+    overflow: hidden;
+  }
+  .label {
+    font-size: 0.85em;
+    color: #a89a8c;
+    font-weight: 700;
+    margin-bottom: 10px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* ===== 설명 패널 ===== */
+  #explain { overflow-y: auto; }
+  #stageTitle {
+    font-size: 1.4em;
+    color: #ff8a80;
+    margin-bottom: 12px;
+  }
+  #stageDesc {
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  #stageDesc code {
+    background: #fef4ea;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 0.95em;
+    color: #d2691e;
+  }
+  .mission-box {
+    background: #fef9f4;
+    border-left: 4px solid #ff8a80;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .mission-box .title {
+    font-size: 0.85em;
+    color: #ff8a80;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .mission-box pre {
+    background: #fff;
+    padding: 10px;
+    border-radius: 6px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 0.95em;
+    color: #555;
+    white-space: pre-wrap;
+    word-break: break-all;
+    margin-top: 6px;
+  }
+  .challenge-box {
+    background: #f0f7ff;
+    border-left: 4px solid #a5d8ff;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+  }
+  .challenge-box .title {
+    font-size: 0.85em;
+    color: #4a9eff;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  .hint-box {
+    background: #fff9db;
+    border-left: 4px solid #ffd43b;
+    padding: 12px 14px;
+    border-radius: 8px;
+    margin-bottom: 12px;
+    animation: pop 0.3s;
+  }
+  .hint-box .title {
+    font-size: 0.85em;
+    color: #d4a017;
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+  @keyframes pop {
+    from { transform: scale(0.95); opacity: 0; }
+    to { transform: scale(1); opacity: 1; }
+  }
+  #controls {
+    display: flex; gap: 8px; margin-top: auto; padding-top: 12px;
+    flex-wrap: wrap;
+  }
+  #controls button {
+    flex: 1;
+    min-width: 100px;
+    padding: 10px;
+    border: none;
+    border-radius: 10px;
+    font-size: 0.95em;
+    font-weight: 600;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  #controls button:active { transform: scale(0.96); }
+  #hintBtn { background: #fff3bf; color: #d4a017; }
+  #hintBtn:hover { background: #ffec99; }
+  #hintBtn.glow { animation: glow 1.2s infinite; }
+  @keyframes glow {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 212, 59, 0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(255, 212, 59, 0); }
+  }
+  #answerBtn { background: #ffe0e0; color: #c92a2a; }
+  #answerBtn:hover { background: #ffc9c9; }
+
+  /* ===== 코드 편집 패널 ===== */
+  #codePanel { display: flex; flex-direction: column; }
+  #codeInput {
+    flex: 1;
+    width: 100%;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace;
+    font-size: 1.02em;
+    line-height: 1.6;
+    background: #fef9f4;
+    color: #444;
+    resize: none;
+    outline: none;
+    transition: border-color 0.2s;
+    -webkit-appearance: none;
+  }
+  #codeInput:focus { border-color: #ff8a80; }
+
+  /* ===== 미리보기 패널 ===== */
+  #previewPanel { display: flex; flex-direction: column; }
+  #preview {
+    flex: 1;
+    width: 100%;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+    background: #fff;
+  }
+
+  /* ===== 푸터 ===== */
+  footer {
+    background: #fff;
+    padding: 12px 24px;
+    border-top: 2px solid #f0e6dc;
+    display: flex; justify-content: space-between; gap: 12px;
+  }
+  footer button {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s, background 0.2s;
+  }
+  footer button:active { transform: scale(0.96); }
+  footer button:disabled { opacity: 0.4; cursor: not-allowed; }
+  #prevBtn { background: #f0e6dc; color: #7a7a7a; }
+  #completeBtn { background: #95d5b2; color: #fff; flex: 1; max-width: 300px; margin: 0 auto; }
+  #completeBtn:hover:not(:disabled) { background: #74c69d; }
+  #nextBtn { background: #a5d8ff; color: #1971c2; }
+  #nextBtn:hover:not(:disabled) { background: #74c0fc; }
+
+  /* ===== 색종이 애니메이션 ===== */
+  #confetti {
+    position: fixed; inset: 0;
+    pointer-events: none;
+    z-index: 200;
+  }
+  .confetti-piece {
+    position: absolute;
+    width: 10px;
+    height: 14px;
+    top: -20px;
+    opacity: 0.9;
+    animation: fall linear forwards;
+  }
+  @keyframes fall {
+    to {
+      transform: translateY(110vh) rotate(720deg);
+      opacity: 0.6;
+    }
+  }
+  #celebrationMsg {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: #fff;
+    padding: 30px 50px;
+    border-radius: 24px;
+    font-size: 2em;
+    font-weight: 700;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    z-index: 201;
+    color: #ff8a80;
+    text-align: center;
+    pointer-events: none;
+    transition: transform 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  #celebrationMsg.show { transform: translate(-50%, -50%) scale(1); }
+
+  /* 틀렸을 때 메시지 */
+  #wrongMsg {
+    position: fixed; top: 50%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: #fff;
+    padding: 28px 40px;
+    border-radius: 24px;
+    font-size: 1.5em;
+    font-weight: 700;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    z-index: 201;
+    color: #e03131;
+    text-align: center;
+    pointer-events: none;
+    white-space: pre-line;
+    line-height: 1.5;
+    transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+    border: 3px solid #ffe0e0;
+  }
+  #wrongMsg.show { transform: translate(-50%, -50%) scale(1); }
+
+  /* ===== 도전 미션 모달 ===== */
+  #challengeModal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 150;
+  }
+  #challengeModal[hidden] { display: none !important; }
+  #challengeModal .modal-box {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 400px;
+    width: calc(100% - 40px);
+    animation: pop 0.3s;
+  }
+  #challengeModal h2 {
+    font-size: 1.4em;
+    color: #ff8a80;
+    margin-bottom: 8px;
+  }
+  #challengeModal p {
+    color: #7a7a7a;
+    margin-bottom: 20px;
+  }
+  #challengeModal .modal-buttons {
+    display: flex; gap: 10px;
+  }
+  #challengeModal button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  #challengeModal button:active { transform: scale(0.96); }
+  #challengeYes { background: #ffd43b; color: #7c5000; }
+  #challengeYes:hover { background: #ffc720; }
+  #challengeNo { background: #a5d8ff; color: #1971c2; }
+  #challengeNo:hover { background: #74c0fc; }
+
+  /* 처음부터 확인 모달 (도전 모달이랑 같은 스타일) */
+  #resetModal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 150;
+  }
+  #resetModal[hidden] { display: none !important; }
+  #resetModal .modal-box {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 400px;
+    width: calc(100% - 40px);
+    animation: pop 0.3s;
+  }
+  #resetModal h2 { font-size: 1.3em; color: #e03131; margin-bottom: 8px; }
+  #resetModal p { color: #7a7a7a; margin-bottom: 20px; }
+  #resetModal .modal-buttons { display: flex; gap: 10px; }
+  #resetModal button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  #resetModal button:active { transform: scale(0.96); }
+  #resetYes { background: #ffe0e0; color: #c92a2a; }
+  #resetYes:hover { background: #ffc9c9; }
+  #resetNo { background: #a5d8ff; color: #1971c2; }
+  #resetNo:hover { background: #74c0fc; }
+
+  /* 반 삭제 모달 (다른 모달과 같은 스타일) */
+  #deleteClassModal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 250;
+  }
+  #deleteClassModal[hidden] { display: none !important; }
+  #deleteClassModal .modal-box {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 400px;
+    width: calc(100% - 40px);
+    animation: pop 0.3s;
+  }
+  #deleteClassModal h2 { font-size: 1.3em; color: #c92a2a; margin-bottom: 8px; }
+  #deleteClassModal p { color: #7a7a7a; margin-bottom: 20px; }
+  #deleteClassModal .modal-buttons { display: flex; gap: 10px; }
+  #deleteClassModal button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  #deleteClassModal button:active { transform: scale(0.96); }
+  #deleteClassYes { background: #ffe0e0; color: #c92a2a; }
+  #deleteClassYes:hover { background: #ffc9c9; }
+  #deleteClassNo { background: #a5d8ff; color: #1971c2; }
+  #deleteClassNo:hover { background: #74c0fc; }
+
+  /* 정답 보기 모달 */
+  #answerModal {
+    position: fixed; inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 150;
+  }
+  #answerModal[hidden] { display: none !important; }
+  #answerModal .modal-box {
+    background: #fff;
+    padding: 32px 28px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    text-align: center;
+    max-width: 400px;
+    width: calc(100% - 40px);
+    animation: pop 0.3s;
+  }
+  #answerModal h2 { font-size: 1.3em; color: #ff8a80; margin-bottom: 8px; }
+  #answerModal p { color: #7a7a7a; margin-bottom: 20px; }
+  #answerModal .modal-buttons { display: flex; gap: 10px; }
+  #answerModal button {
+    flex: 1;
+    padding: 14px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    transition: transform 0.1s;
+  }
+  #answerModal button:active { transform: scale(0.96); }
+  #answerYes { background: #ffe0e0; color: #c92a2a; }
+  #answerYes:hover { background: #ffc9c9; }
+  #answerNo { background: #95d5b2; color: #fff; }
+  #answerNo:hover { background: #74c69d; }
+
+  /* 도전 모드일 때 도전 박스 강조 */
+  .challenge-box.active-challenge {
+    background: #fff9db;
+    border-left-color: #ffd43b;
+    box-shadow: 0 0 0 3px #ffec99;
+  }
+
+  /* ===== 헤더 우측 버튼들 ===== */
+  #headerButtons { display: flex; gap: 6px; align-items: center; }
+  #saveBtn, #loadBtn, #resetBtn {
+    background: none; border: 1px solid #e0d5c8;
+    color: #7a6a5a; font-size: 0.85em;
+    padding: 6px 12px; border-radius: 8px;
+    cursor: pointer; font-family: inherit;
+    font-weight: 600;
+  }
+  #saveBtn { background: #d3f9d8; border-color: #b2f2bb; color: #2b8a3e; }
+  #saveBtn:hover { background: #b2f2bb; }
+  #loadBtn { background: #d0ebff; border-color: #a5d8ff; color: #1971c2; }
+  #loadBtn:hover { background: #a5d8ff; }
+  #resetBtn:hover { background: #f7f0e8; }
+  #saveBtn:disabled, #loadBtn:disabled { opacity: 0.5; cursor: wait; }
+
+  /* 클라우드 알림 토스트 */
+  #cloudToast {
+    position: fixed; bottom: 30px; left: 50%;
+    transform: translateX(-50%) translateY(100px);
+    background: #fff;
+    padding: 14px 24px;
+    border-radius: 12px;
+    box-shadow: 0 8px 30px rgba(0,0,0,0.15);
+    font-size: 1em;
+    font-weight: 600;
+    z-index: 250;
+    opacity: 0;
+    transition: transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.3s;
+    border-left: 5px solid #95d5b2;
+    max-width: 80%;
+    text-align: center;
+  }
+  #cloudToast.show {
+    transform: translateX(-50%) translateY(0);
+    opacity: 1;
+  }
+  #cloudToast.error { border-left-color: #ff8a80; color: #c92a2a; }
+  #cloudToast.success { border-left-color: #95d5b2; color: #2b8a3e; }
+
+  /* ===== 반응형 (아이패드 세로 / 좁은 화면) ===== */
+  @media (max-width: 900px) {
+    main {
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: auto 1fr;
+    }
+    #explain { grid-column: 1 / 3; max-height: 30vh; }
+  }
+  @media (max-width: 600px) {
+    main { grid-template-columns: 1fr; grid-template-rows: auto auto 1fr; }
+    #explain { grid-column: 1; max-height: none; }
+    header { padding: 10px 14px; }
+    header h1 { font-size: 1.15em; }
+    #progress { font-size: 0.8em; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== 로그인 화면 ===== -->
+<div id="login">
+  <button id="createClassBtn">🎓 코드 생성 (선생님)</button>
+  <div class="box">
+    <h1>👋 디벗부 코딩교실</h1>
+    <p>반 코드와 이름을 입력해줘!</p>
+    <input id="classCodeInput" type="text" placeholder="반 코드" autocomplete="off">
+    <input id="nameInput" type="text" placeholder="예: 홍길동 (성까지 적어줘)" autocomplete="off">
+    <button id="startBtn" class="login-btn">로그인 🚀</button>
+    <div id="loginError"></div>
+  </div>
+</div>
+
+<!-- ===== 선생님 코드 생성 화면 ===== -->
+<div id="teacherSetup" hidden>
+  <div class="box">
+    <h1>🎓 새 반 만들기</h1>
+    <p class="subtitle">반 정보와 학생 이름을 등록해줘</p>
+
+    <label>반 이름</label>
+    <input id="classNameInput" type="text" placeholder="예: 5학년 디벗부">
+
+    <label>선생님 이름</label>
+    <input id="teacherNameInput" type="text" placeholder="예: 태윤">
+
+    <label>반 코드 (8자리 숫자, 학생한테 알려줄 코드)</label>
+    <div class="add-row">
+      <input id="customCodeInput" type="text" placeholder="예: 12345678" maxlength="8" inputmode="numeric" autocomplete="off">
+      <button id="randomCodeBtn" type="button">🎲 랜덤</button>
+    </div>
+
+    <label>학생 이름 (한 명씩 추가)</label>
+    <div id="rosterList"></div>
+    <div class="add-row">
+      <input id="addStudentInput" type="text" placeholder="예: 홍길동" autocomplete="off">
+      <button id="addStudentBtn">+ 추가</button>
+    </div>
+
+    <div id="teacherSetupError"></div>
+    <div class="footer-buttons">
+      <button id="backToLoginBtn">← 뒤로</button>
+      <button id="previewFromSetupBtn">🎮 미리보기</button>
+      <button id="createClassSubmit">반 만들기 🚀</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 선생님 대시보드 ===== -->
+<div id="teacherDashboard" hidden>
+  <header>
+    <h1 id="dashboardTitle">🎓 반 이름</h1>
+    <div class="info">선생님: <span id="dashboardTeacher"></span> · 학생 <span id="dashboardCount"></span>명</div>
+    <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+      <div class="code-share" id="dashboardCodeShare" title="복사하기">코드: <span id="dashboardCode"></span></div>
+      <button id="teacherLogoutBtn">🚪 나가기</button>
+      <button id="deleteClassBtn">🗑️ 반 삭제</button>
+    </div>
+  </header>
+  <div id="studentGrid"></div>
+</div>
+
+<!-- 학생 화면 크게 보기 -->
+<div id="studentZoomModal" hidden>
+  <div class="zoom-box">
+    <div class="zoom-header">
+      <h3 id="zoomTitle"></h3>
+      <button class="close-x" id="closeZoomBtn">닫기 ✕</button>
+    </div>
+    <div class="zoom-body">
+      <div class="preview-panel">
+        <div style="font-size:0.85em;color:#a89a8c;margin-bottom:6px;font-weight:700;">👀 학생 화면</div>
+        <iframe id="zoomPreview"></iframe>
+      </div>
+      <div>
+        <div style="font-size:0.85em;color:#a89a8c;margin-bottom:6px;font-weight:700;">✏️ 학생이 친 코드</div>
+        <pre class="code-panel" id="zoomCode"></pre>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 앱 ===== -->
+<header hidden>
+  <h1 id="pageTitle">🖥️ 디벗부 코딩교실</h1>
+  <nav id="progress"></nav>
+  <div id="headerButtons">
+    <button id="saveBtn">💾 저장</button>
+    <button id="loadBtn">📥 불러오기</button>
+    <button id="resetBtn">🔄 처음부터</button>
+  </div>
+</header>
+<div id="saveInfo" hidden>💾 각 단계마다 자동으로 저장돼! 나중에 다시 열어도 이어서 할 수 있어.</div>
+<div id="previewBanner" hidden>🎮 미리보기 모드 (저장 안 됨) <button id="exitPreviewBtn">🚪 나가기</button></div>
+
+<main hidden>
+  <aside id="explain">
+    <div class="label">📖 이번 미션</div>
+    <h2 id="stageTitle"></h2>
+    <div id="stageDesc"></div>
+    <div class="mission-box">
+      <div class="title">✏️ 이렇게 쳐봐!</div>
+      <div id="stageMission"></div>
+    </div>
+    <div class="challenge-box">
+      <div class="title">⭐ 도전 미션 (더 잘하는 사람만!)</div>
+      <div id="stageChallenge"></div>
+    </div>
+    <div id="hintBox" hidden></div>
+    <div id="controls">
+      <button id="hintBtn">💡 힌트</button>
+      <button id="answerBtn">🔓 정답 보기</button>
+    </div>
+  </aside>
+
+  <section id="codePanel">
+    <div class="label">✏️ 여기에 코드를 써봐</div>
+    <textarea id="codeInput" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+  </section>
+
+  <section id="previewPanel">
+    <div class="label">👀 결과가 여기 나와</div>
+    <iframe id="preview"></iframe>
+  </section>
+</main>
+
+<footer hidden>
+  <button id="prevBtn">◀ 이전 단계</button>
+  <button id="completeBtn">✅ 이 단계 완료!</button>
+  <button id="nextBtn">다음 단계 ▶</button>
+</footer>
+
+<div id="confetti"></div>
+<div id="celebrationMsg"></div>
+<div id="wrongMsg"></div>
+<div id="cloudToast"></div>
+
+<!-- 도전 미션 물어보는 모달 -->
+<div id="challengeModal" hidden>
+  <div class="modal-box">
+    <h2>⭐ 도전 미션도 해볼래?</h2>
+    <p>도전 미션은 조금 더 어려워!</p>
+    <div class="modal-buttons">
+      <button id="challengeYes">응, 도전할래!</button>
+      <button id="challengeNo">아니, 다음 단계로</button>
+    </div>
+  </div>
+</div>
+
+<!-- 처음부터 다시 시작 확인 모달 -->
+<div id="resetModal" hidden>
+  <div class="modal-box">
+    <h2>🔄 진짜 처음부터 다시 할까?</h2>
+    <p>지금까지 한 거 <b>전부 다</b> 사라져!</p>
+    <div class="modal-buttons">
+      <button id="resetYes">응, 전부 지워</button>
+      <button id="resetNo">아니, 계속할래</button>
+    </div>
+  </div>
+</div>
+
+<!-- 반 삭제 확인 모달 -->
+<div id="deleteClassModal" hidden>
+  <div class="modal-box">
+    <h2>🗑️ 진짜 반을 삭제할까?</h2>
+    <p>학생들이 저장한 코드가 <b>전부 사라져!</b><br>다시 되돌릴 수 없어.</p>
+    <div class="modal-buttons">
+      <button id="deleteClassYes">응, 삭제</button>
+      <button id="deleteClassNo">아니, 그만</button>
+    </div>
+  </div>
+</div>
+
+<!-- 정답 보기 확인 모달 -->
+<div id="answerModal" hidden>
+  <div class="modal-box">
+    <h2>🔓 정답 볼래?</h2>
+    <p>직접 하면 더 재밌는데... 그래도 볼래?</p>
+    <div class="modal-buttons">
+      <button id="answerYes">응, 보여줘</button>
+      <button id="answerNo">아니, 더 해볼래</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ============================================
+// 단계 데이터
+// ============================================
+const STAGES = [
+  {
+    id: 1,
+    title: "1단계: 글자 화면에 띄우기",
+    desc: `화면에 <b>큰 글자</b>를 띄워보자!<br>
+    <code>&lt;h1&gt;</code>로 시작하고 <code>&lt;/h1&gt;</code>로 끝내면 돼.`,
+    mission: `오른쪽 화면 보면서 <b>그대로 쳐봐</b>:
+<pre>&lt;h1&gt;안녕, 나는 코더야!&lt;/h1&gt;</pre>
+그 다음엔 "안녕" 자리에 <b>네 이름</b> 넣어봐!`,
+    challenge: `<b>글자 크기 3종류</b> 다 써보기! 아래 그대로 치면 크기가 다 달라져.
+<pre>&lt;h1&gt;큰 글자&lt;/h1&gt;
+&lt;h2&gt;중간 글자&lt;/h2&gt;
+&lt;p&gt;작은 글자&lt;/p&gt;</pre>
+내용을 자기가 좋아하는 말로 바꿔봐!`,
+    hint: `끝나는 <code>&lt;/h1&gt;</code>에 <b>슬래시(/)</b> 넣었어?`,
+    answer: `<h1>안녕, 나는 코더야!</h1>`,
+    starter: ``,
+    check: /<h1[^>]*>\s*\S[\s\S]*?<\/h1>/i
+  },
+  {
+    id: 2,
+    title: "2단계: 색깔이랑 크기 바꾸기",
+    desc: `<code>style</code>은 <b>꾸미기 마법</b>!<br>
+    글자 색깔을 바꿔보자.`,
+    mission: `아래처럼 쳐봐:
+<pre>&lt;h1 style="color: red;"&gt;빨간 글자!&lt;/h1&gt;</pre>
+그 다음 <code>red</code>를 <code>blue</code>, <code>green</code>, <code>purple</code>로 바꿔봐!`,
+    challenge: `<code>;</code>(세미콜론)으로 나눠서 <b>여러 개 꾸미기</b>!
+<pre>&lt;h1 style="color: white; background-color: hotpink;"&gt;
+  꾸민 글자!
+&lt;/h1&gt;</pre>
+<code>hotpink</code>를 다른 색으로 바꿔봐 (skyblue, gold, tomato 등).`,
+    hint: `따옴표 <code>"</code> 두 개 다 있어? <code>;</code>(세미콜론) 안 빼먹었지?`,
+    answer: `<h1 style="color: red;">빨간 글자!</h1>`,
+    starter: ``,
+    check: /<h1[^>]*style\s*=\s*["'][^"']*color\s*:[^"']+["'][^>]*>\s*\S[\s\S]*?<\/h1>/i
+  },
+  {
+    id: 3,
+    title: "3단계: 버튼 만들고 눌러보기",
+    desc: `버튼 만들고 눌러보기!<br>
+    누르면 알림창이 튀어나올 거야.`,
+    mission: `아래 코드 치고, 화면 버튼 눌러봐:
+<pre>&lt;button onclick="alert('안녕!')"&gt;여기 눌러봐&lt;/button&gt;</pre>`,
+    challenge: `<b>버튼 2개</b> 만들어봐. 각각 다른 일을 해!
+<pre>&lt;button onclick="alert('안녕!')"&gt;인사 버튼&lt;/button&gt;
+&lt;button onclick="document.body.style.background='pink'"&gt;색깔 바꾸기&lt;/button&gt;</pre>
+첫 번째는 알림창, 두 번째는 배경색 바꾸는 버튼이야.`,
+    hint: `밖은 큰따옴표 <code>"</code>, 안은 작은따옴표 <code>'</code> 이야!`,
+    answer: `<button onclick="alert('안녕!')">여기 눌러봐</button>`,
+    starter: ``,
+    check: /<button[^>]*onclick\s*=\s*["'][^"']+["'][^>]*>\s*\S[\s\S]*?<\/button>/i
+  },
+  {
+    id: 4,
+    hidden: true,
+    title: "🎁 히든 4단계: 이모지 대박 크게!",
+    desc: `숨겨진 단계 발견! 🎉<br>
+    이모지도 글자처럼 넣고 <b>엄청 크게</b> 만들 수 있어!`,
+    mission: `아래 코드 쳐봐:
+<pre>&lt;h1 style="font-size: 150px;"&gt;🎉&lt;/h1&gt;</pre>
+이모지가 화면을 꽉 채울 거야! 다른 이모지로도 바꿔봐 (🚀 🐱 🍕 ⚽).`,
+    challenge: `이모지 여러 개로 <b>이야기 만들기</b>!
+<pre>&lt;h1 style="font-size: 80px;"&gt;🐱 → 🐟 → 😋&lt;/h1&gt;</pre>
+"고양이가 물고기 먹었다"는 뜻이야. 자기만의 이모지 스토리 만들어봐!`,
+    hint: `이모지는 아이패드 키보드에서 <b>😀 버튼</b> 눌러서 넣을 수 있어. 아니면 그냥 복사해서 붙여넣기!`,
+    answer: `<h1 style="font-size: 150px;">🎉</h1>`,
+    starter: ``,
+    check: /font-size\s*:\s*\d/i
+  },
+  {
+    id: 5,
+    hidden: true,
+    title: "🎁 히든 5단계: 리스트 만들기",
+    desc: `또 숨겨진 단계! 🎁<br>
+    좋아하는 거 목록을 만들어보자.`,
+    mission: `아래 코드 쳐봐:
+<pre>&lt;h2&gt;내가 좋아하는 음식&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;피자&lt;/li&gt;
+  &lt;li&gt;치킨&lt;/li&gt;
+  &lt;li&gt;떡볶이&lt;/li&gt;
+&lt;/ul&gt;</pre>
+음식 이름을 자기가 좋아하는 걸로 바꿔봐!`,
+    challenge: `리스트에도 <b>색깔</b> 넣을 수 있어!
+<pre>&lt;ul style="color: purple;"&gt;
+  &lt;li&gt;🎮 게임하기&lt;/li&gt;
+  &lt;li&gt;⚽ 축구하기&lt;/li&gt;
+  &lt;li&gt;😴 잠자기&lt;/li&gt;
+&lt;/ul&gt;</pre>
+색깔을 <code>red</code>나 <code>blue</code>로도 바꿔봐.`,
+    hint: `<code>&lt;ul&gt;</code>로 시작해서 <code>&lt;/ul&gt;</code>로 끝내야 해. 그 안에 <code>&lt;li&gt;내용&lt;/li&gt;</code>을 여러 개 넣는 거야!`,
+    answer: `<h2>내가 좋아하는 음식</h2>
+<ul>
+  <li>피자</li>
+  <li>치킨</li>
+  <li>떡볶이</li>
+</ul>`,
+    starter: ``,
+    check: /<ul[^>]*>[\s\S]*?<li[^>]*>\s*\S[\s\S]*?<\/li>[\s\S]*?<\/ul>/i
+  },
+  {
+    id: 6,
+    hidden: true,
+    title: "🎨 자유 창작: 나만의 페이지 만들기!",
+    desc: `마지막! 배운 거 다 써서<br>
+    <b>나를 소개하는 페이지</b>를 만들어봐!`,
+    mission: `자유롭게 만들어봐! 아이디어가 필요하면 아래 참고:
+<pre>&lt;h1 style="color: hotpink;"&gt;내 이름은 ○○!&lt;/h1&gt;
+&lt;h2&gt;내가 좋아하는 것&lt;/h2&gt;
+&lt;ul&gt;
+  &lt;li&gt;...&lt;/li&gt;
+&lt;/ul&gt;
+&lt;button onclick="alert('반가워!')"&gt;나한테 인사하기&lt;/button&gt;</pre>`,
+    challenge: `배경을 <b>무지개 그라데이션</b>으로 만들어봐!
+<pre>&lt;body style="background: linear-gradient(pink, skyblue);"&gt;
+  &lt;h1&gt;예쁜 그라데이션!&lt;/h1&gt;
+&lt;/body&gt;</pre>
+<code>pink</code>랑 <code>skyblue</code> 자리에 좋아하는 색 넣어봐.`,
+    hint: `막히면 이전 단계로 돌아가서 다시 보고 와도 돼. 정답은 없어. <b>네가 만든 게 정답</b>이야!`,
+    answer: `<h1 style="color: hotpink;">내 이름은 코더!</h1>
+<h2>내가 좋아하는 것</h2>
+<ul>
+  <li>🎮 게임</li>
+  <li>🍕 피자</li>
+  <li>💻 코딩</li>
+</ul>
+<button onclick="alert('반가워!')">나한테 인사하기</button>`,
+    starter: ``,
+    check: /<[a-z][^>]*>[\s\S]*<\/[a-z][^>]*>/i
+  }
+];
+
+// ============================================
+// 상태 관리 (localStorage)
+// ============================================
+const STORAGE_KEY = 'dibut_coding_class';
+let state = {
+  mode: 'login',       // 'login' | 'teacher' | 'student' | 'preview'
+  classCode: '',       // 8자리 숫자 코드 (학생/선생님이 보는 것)
+  binId: '',           // JSONBin 실제 bin ID (내부에서만 씀)
+  className: '',
+  teacherName: '',
+  name: '',            // 학생 이름
+  currentStage: 0,
+  completedStages: [],
+  codes: {}, // stageId → code
+  roster: []           // 선생님용: 등록된 학생 이름 목록
+};
+
+function loadState() {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved) state = { ...state, ...JSON.parse(saved) };
+  } catch (e) {}
+}
+function saveState() {
+  if (state.mode === 'preview') return; // 미리보기는 저장 X
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch (e) {}
+}
+
+// ============================================
+// 이름에서 성 떼기 (홍길동 → 길동, 이솔 → 솔)
+// ============================================
+function getShortName(fullName) {
+  const trimmed = fullName.trim();
+  if (trimmed.length <= 1) return trimmed;
+  return trimmed.slice(1);
+}
+
+// ============================================
+// 화면 전환
+// ============================================
+function showScreen(screen) {
+  // 모든 화면 감추기
+  document.getElementById('login').hidden = true;
+  document.getElementById('teacherSetup').hidden = true;
+  document.getElementById('teacherDashboard').hidden = true;
+  document.querySelector('header').hidden = true;
+  document.getElementById('saveInfo').hidden = true;
+  document.getElementById('previewBanner').hidden = true;
+  document.querySelector('main').hidden = true;
+  document.querySelector('footer').hidden = true;
+
+  if (screen === 'login') {
+    document.getElementById('login').hidden = false;
+    document.getElementById('login').style.display = 'flex';
+    setTimeout(() => document.getElementById('classCodeInput').focus(), 100);
+  } else if (screen === 'teacherSetup') {
+    document.getElementById('teacherSetup').hidden = false;
+    document.getElementById('teacherSetup').style.display = 'flex';
+    setTimeout(() => document.getElementById('classNameInput').focus(), 100);
+  } else if (screen === 'teacher') {
+    document.getElementById('teacherDashboard').hidden = false;
+    startTeacherPolling();
+  } else if (screen === 'student') {
+    document.querySelector('header').hidden = false;
+    document.getElementById('saveInfo').hidden = false;
+    document.querySelector('main').hidden = false;
+    document.querySelector('footer').hidden = false;
+    stopTeacherPolling();
+    // 저장/불러오기/처음부터 버튼 다시 보이게
+    document.getElementById('saveBtn').style.display = '';
+    document.getElementById('loadBtn').style.display = '';
+    document.getElementById('resetBtn').style.display = '';
+  } else if (screen === 'preview') {
+    document.querySelector('header').hidden = false;
+    document.getElementById('previewBanner').hidden = false;
+    document.querySelector('main').hidden = false;
+    document.querySelector('footer').hidden = false;
+    stopTeacherPolling();
+    // 미리보기에서는 저장/불러오기/처음부터 버튼 숨김
+    document.getElementById('saveBtn').style.display = 'none';
+    document.getElementById('loadBtn').style.display = 'none';
+    document.getElementById('resetBtn').style.display = 'none';
+  }
+}
+
+// 학생 로그인
+document.getElementById('startBtn').addEventListener('click', studentLogin);
+document.getElementById('classCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') document.getElementById('nameInput').focus();
+});
+document.getElementById('nameInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') studentLogin();
+});
+
+// 8자리 반 코드로 실제 bin ID 찾기
+async function findBinByClassCode(code) {
+  const cacheKey = 'dibut_code_' + code;
+  const cached = localStorage.getItem(cacheKey);
+  if (cached) {
+    // 캐시 확인
+    try {
+      const vr = await fetch('https://api.jsonbin.io/v3/b/' + cached + '/latest', {
+        headers: { 'X-Master-Key': JSONBIN_KEY }
+      });
+      if (vr.ok) {
+        const vd = await vr.json();
+        if (vd.record && vd.record.classCode === code) return cached;
+      }
+    } catch(e) {}
+    localStorage.removeItem(cacheKey);
+  }
+  // JSONBin에서 전체 bin 목록 가져와서 매칭되는 거 찾기
+  const listRes = await fetch('https://api.jsonbin.io/v3/c/uncategorized/bins?sortOrder=descending', {
+    headers: { 'X-Master-Key': JSONBIN_KEY }
+  });
+  if (!listRes.ok) throw new Error('반 목록 조회 실패 (' + listRes.status + ')');
+  const bins = await listRes.json();
+  for (const b of bins) {
+    const bid = b.record || b.id || (b.metadata && b.metadata.id);
+    if (!bid) continue;
+    try {
+      const gr = await fetch('https://api.jsonbin.io/v3/b/' + bid + '/latest', {
+        headers: { 'X-Master-Key': JSONBIN_KEY }
+      });
+      if (!gr.ok) continue;
+      const gd = await gr.json();
+      if (gd.record && gd.record.classCode === code) {
+        localStorage.setItem(cacheKey, bid);
+        return bid;
+      }
+    } catch(e) {}
+  }
+  return null;
+}
+
+async function studentLogin() {
+  const errorEl = document.getElementById('loginError');
+  errorEl.textContent = '';
+  const classCode = document.getElementById('classCodeInput').value.trim();
+  const name = document.getElementById('nameInput').value.trim();
+
+  if (!classCode) {
+    errorEl.textContent = '반 코드를 입력해줘!';
+    return;
+  }
+  if (!/^\d{8}$/.test(classCode)) {
+    errorEl.textContent = '반 코드는 8자리 숫자야!';
+    return;
+  }
+  if (!name) {
+    errorEl.textContent = '이름을 입력해줘!';
+    return;
+  }
+
+  const startBtn = document.getElementById('startBtn');
+  startBtn.disabled = true;
+  startBtn.textContent = '로그인 중...';
+  try {
+    // 8자리 코드로 실제 bin 찾기
+    const binId = await findBinByClassCode(classCode);
+    if (!binId) {
+      errorEl.textContent = '반 코드가 틀렸어! 다시 확인해줘.';
+      return;
+    }
+    // 반 데이터 가져오기
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) {
+      errorEl.textContent = '반 데이터를 불러올 수 없어ㅠㅠ';
+      return;
+    }
+    const result = await res.json();
+    const data = result.record || {};
+    const roster = data.roster || [];
+
+    if (!roster.includes(name)) {
+      errorEl.textContent = '"' + name + '"은(는) 이 반에 없어! 이름 확인해줘.';
+      return;
+    }
+
+    // 로그인 성공
+    state.mode = 'student';
+    state.classCode = classCode;
+    state.binId = binId;
+    state.className = data.className || '';
+    state.teacherName = data.teacherName || '';
+    state.name = name;
+
+    // 저장된 데이터 있으면 불러오기
+    if (data.students && data.students[name]) {
+      const my = data.students[name];
+      if (typeof my.currentStage === 'number') state.currentStage = my.currentStage;
+      if (Array.isArray(my.completedStages)) state.completedStages = my.completedStages;
+      if (my.codes) state.codes = my.codes;
+    } else {
+      state.currentStage = 0;
+      state.completedStages = [];
+      state.codes = {};
+    }
+    saveState();
+    showScreen('student');
+    render();
+  } catch (err) {
+    errorEl.textContent = '연결 실패ㅠㅠ: ' + err.message;
+  } finally {
+    startBtn.disabled = false;
+    startBtn.textContent = '로그인 🚀';
+  }
+}
+
+// 코드 생성 (선생님 화면으로)
+document.getElementById('createClassBtn').addEventListener('click', () => {
+  renderRoster();
+  showScreen('teacherSetup');
+});
+document.getElementById('backToLoginBtn').addEventListener('click', () => {
+  showScreen('login');
+});
+
+// 미리보기 시작 (코드 생성 화면 안에서)
+function startPreview() {
+  state.mode = 'preview';
+  state.name = '체험';
+  state.classCode = '';
+  state.binId = '';
+  state.currentStage = 0;
+  state.completedStages = [];
+  state.codes = {};
+  // localStorage에는 저장 안 함 (미리보기 나가면 다 사라지게)
+  showScreen('preview');
+  render();
+}
+document.getElementById('previewFromSetupBtn').addEventListener('click', startPreview);
+
+// 미리보기 나가기 - 코드 생성 화면(선생님 설정)으로 돌아가기
+document.getElementById('exitPreviewBtn').addEventListener('click', () => {
+  state.mode = 'login';
+  state.name = '';
+  state.currentStage = 0;
+  state.completedStages = [];
+  state.codes = {};
+  renderRoster();
+  showScreen('teacherSetup');
+});
+
+// 반 삭제
+document.getElementById('deleteClassBtn').addEventListener('click', () => {
+  const m = document.getElementById('deleteClassModal');
+  m.removeAttribute('hidden');
+  m.style.display = 'flex';
+});
+document.getElementById('deleteClassNo').addEventListener('click', () => {
+  const m = document.getElementById('deleteClassModal');
+  m.setAttribute('hidden', '');
+  m.style.display = 'none';
+});
+document.getElementById('deleteClassYes').addEventListener('click', async () => {
+  const m = document.getElementById('deleteClassModal');
+  const btn = document.getElementById('deleteClassYes');
+  btn.disabled = true;
+  btn.textContent = '삭제 중...';
+  try {
+    if (state.binId) {
+      const res = await fetch('https://api.jsonbin.io/v3/b/' + state.binId, {
+        method: 'DELETE',
+        headers: { 'X-Master-Key': JSONBIN_KEY }
+      });
+      if (!res.ok) throw new Error('삭제 실패 (' + res.status + ')');
+    }
+    // 캐시도 삭제
+    if (state.classCode) localStorage.removeItem('dibut_code_' + state.classCode);
+    stopTeacherPolling();
+    state.mode = 'login';
+    state.classCode = '';
+    state.binId = '';
+    state.className = '';
+    state.teacherName = '';
+    state.roster = [];
+    saveState();
+    m.setAttribute('hidden', '');
+    m.style.display = 'none';
+    showScreen('login');
+    showCloudToast('🗑️ 반이 삭제됐어', 'success');
+  } catch (err) {
+    showCloudToast('삭제 실패: ' + err.message, 'error');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '응, 삭제';
+  }
+});
+
+// 학생 이름 추가
+let setupRoster = [];
+function renderRoster() {
+  const list = document.getElementById('rosterList');
+  list.innerHTML = '';
+  if (setupRoster.length === 0) {
+    list.innerHTML = '<span style="color:#a89a8c;font-size:0.9em;">아직 등록된 학생이 없어</span>';
+    return;
+  }
+  setupRoster.forEach((n, i) => {
+    const chip = document.createElement('span');
+    chip.className = 'roster-chip';
+    chip.innerHTML = n + ' <button class="remove-x" data-i="' + i + '">×</button>';
+    list.appendChild(chip);
+  });
+  list.querySelectorAll('.remove-x').forEach(btn => {
+    btn.addEventListener('click', (e) => {
+      const i = +e.target.dataset.i;
+      setupRoster.splice(i, 1);
+      renderRoster();
+    });
+  });
+}
+function addStudent() {
+  const inp = document.getElementById('addStudentInput');
+  const name = inp.value.trim();
+  if (!name) return;
+  if (setupRoster.includes(name)) {
+    inp.value = '';
+    return;
+  }
+  setupRoster.push(name);
+  inp.value = '';
+  renderRoster();
+  inp.focus();
+}
+document.getElementById('addStudentBtn').addEventListener('click', addStudent);
+document.getElementById('addStudentInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Enter') addStudent();
+});
+
+// 랜덤 8자리 코드 생성
+document.getElementById('randomCodeBtn').addEventListener('click', () => {
+  const code = String(Math.floor(10000000 + Math.random() * 90000000));
+  document.getElementById('customCodeInput').value = code;
+});
+
+// 반 만들기 제출
+document.getElementById('createClassSubmit').addEventListener('click', async () => {
+  const errorEl = document.getElementById('teacherSetupError');
+  errorEl.textContent = '';
+  const className = document.getElementById('classNameInput').value.trim();
+  const teacherName = document.getElementById('teacherNameInput').value.trim();
+  let customCode = document.getElementById('customCodeInput').value.trim();
+
+  if (!className) { errorEl.textContent = '반 이름을 입력해줘!'; return; }
+  if (!teacherName) { errorEl.textContent = '선생님 이름을 입력해줘!'; return; }
+  if (setupRoster.length === 0) { errorEl.textContent = '학생을 최소 1명 이상 등록해줘!'; return; }
+
+  // 코드 없으면 자동 생성
+  if (!customCode) {
+    customCode = String(Math.floor(10000000 + Math.random() * 90000000));
+  } else if (!/^\d{8}$/.test(customCode)) {
+    errorEl.textContent = '반 코드는 8자리 숫자여야 해!';
+    return;
+  }
+
+  const btn = document.getElementById('createClassSubmit');
+  btn.disabled = true;
+  btn.textContent = '만드는 중...';
+  try {
+    // 이미 있는 코드인지 확인
+    const existing = await findBinByClassCode(customCode).catch(() => null);
+    if (existing) {
+      errorEl.textContent = '이미 있는 코드야! 다른 코드로 해줘.';
+      return;
+    }
+
+    const res = await fetch('https://api.jsonbin.io/v3/b', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY,
+        'X-Bin-Name': 'dibut-' + customCode
+      },
+      body: JSON.stringify({
+        classCode: customCode,
+        className: className,
+        teacherName: teacherName,
+        roster: setupRoster,
+        students: {},
+        createdAt: new Date().toISOString()
+      })
+    });
+    const result = await res.json();
+    if (!res.ok || !result.metadata || !result.metadata.id) {
+      throw new Error(result.message || '만들기 실패');
+    }
+    const binId = result.metadata.id;
+    state.mode = 'teacher';
+    state.classCode = customCode;
+    state.binId = binId;
+    state.className = className;
+    state.teacherName = teacherName;
+    state.roster = setupRoster.slice();
+    saveState();
+    // 코드→binId 캐시 저장
+    localStorage.setItem('dibut_code_' + customCode, binId);
+    setupRoster = [];
+    // 입력값 지우기
+    document.getElementById('classNameInput').value = '';
+    document.getElementById('teacherNameInput').value = '';
+    document.getElementById('customCodeInput').value = '';
+    showScreen('teacher');
+    renderTeacherDashboard();
+  } catch (err) {
+    errorEl.textContent = '실패ㅠㅠ: ' + err.message;
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '반 만들기 🚀';
+  }
+});
+
+// 선생님 나가기
+document.getElementById('teacherLogoutBtn').addEventListener('click', () => {
+  if (!confirm('선생님 화면에서 나갈까? 반은 안 지워져.')) return;
+  stopTeacherPolling();
+  state.mode = 'login';
+  saveState();
+  showScreen('login');
+});
+
+// 반 코드 복사
+document.getElementById('dashboardCodeShare').addEventListener('click', async () => {
+  const code = state.classCode;
+  try {
+    await navigator.clipboard.writeText(code);
+    showCloudToast('📋 코드 복사됨!', 'success');
+  } catch (e) {
+    showCloudToast('코드: ' + code, 'success');
+  }
+});
+
+// ============================================
+// 렌더링
+// ============================================
+function render() {
+  const stage = STAGES[state.currentStage];
+  const shortName = getShortName(state.name);
+
+  // 제목 - 이름 반영
+  document.getElementById('pageTitle').innerHTML = `🖥️ 코딩교실`;
+
+  // 진행 상황 표시
+  const progress = document.getElementById('progress');
+  progress.innerHTML = '';
+  STAGES.forEach((s, i) => {
+    const el = document.createElement('span');
+    el.className = 'step';
+    const done = state.completedStages.includes(s.id);
+    const isHidden = s.hidden;
+    const prevDone = i === 0 || state.completedStages.includes(STAGES[i-1].id);
+    const locked = isHidden && !prevDone;
+
+    if (done) el.classList.add('done');
+    if (i === state.currentStage) el.classList.add('active');
+    if (locked) el.classList.add('locked');
+
+    let label = '';
+    if (locked) label = `🔒 ???`;
+    else if (s.id === 6) label = `🎨 자유창작 ${done ? '✅' : ''}`;
+    else if (s.hidden) label = `🎁 히든${s.id - 3} ${done ? '✅' : ''}`;
+    else label = `${s.id}단계 ${done ? '✅' : ''}`;
+
+    el.textContent = label;
+    if (!locked) {
+      el.addEventListener('click', () => {
+        state.currentStage = i;
+        saveState();
+        render();
+      });
+    }
+    progress.appendChild(el);
+  });
+
+  // 현재 단계
+  document.getElementById('stageTitle').textContent = stage.title;
+  document.getElementById('stageDesc').innerHTML = stage.desc;
+  document.getElementById('stageMission').innerHTML = stage.mission;
+  document.getElementById('stageChallenge').innerHTML = stage.challenge;
+  document.getElementById('hintBox').hidden = true;
+  document.getElementById('hintBtn').classList.remove('glow');
+
+  // 도전 모드 UI 리셋
+  inChallengeMode = false;
+  document.querySelector('.mission-box').style.display = '';
+  document.querySelector('.challenge-box').classList.remove('active-challenge');
+  document.querySelector('.challenge-box .title').innerHTML = '⭐ 도전 미션 (더 잘하는 사람만!)';
+
+  // 코드 불러오기
+  const savedCode = state.codes[stage.id];
+  document.getElementById('codeInput').value = savedCode !== undefined ? savedCode : stage.starter;
+  updatePreview();
+
+  // 버튼 상태
+  document.getElementById('prevBtn').disabled = state.currentStage === 0;
+  const nextStage = STAGES[state.currentStage + 1];
+  const nextLocked = nextStage && nextStage.hidden && !state.completedStages.includes(stage.id);
+  document.getElementById('nextBtn').disabled = state.currentStage >= STAGES.length - 1 || nextLocked;
+  document.getElementById('completeBtn').textContent = state.completedStages.includes(stage.id)
+    ? '✅ 이미 완료!' : '✅ 이 단계 완료!';
+}
+
+// ============================================
+// 실시간 미리보기
+// ============================================
+const codeInput = document.getElementById('codeInput');
+const preview = document.getElementById('preview');
+
+function updatePreview() {
+  const code = codeInput.value;
+  const doc = `<!DOCTYPE html>
+<html><head><meta charset="UTF-8">
+<style>
+  body {
+    font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif;
+    padding: 16px;
+    margin: 0;
+    background: #fff;
+    color: #333;
+  }
+  .toast-alert {
+    position: fixed;
+    top: 20px; left: 50%;
+    transform: translateX(-50%);
+    background: #fff;
+    padding: 14px 22px;
+    border-radius: 12px;
+    box-shadow: 0 6px 24px rgba(0,0,0,0.18);
+    z-index: 99999;
+    font-size: 18px;
+    font-weight: 600;
+    color: #333;
+    border: 3px solid #ff8a80;
+    max-width: 80%;
+    text-align: center;
+    animation: toastIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  }
+  @keyframes toastIn {
+    from { transform: translate(-50%, -80px); opacity: 0; }
+    to { transform: translate(-50%, 0); opacity: 1; }
+  }
+  .toast-alert.hiding { opacity: 0; transition: opacity 0.3s; }
+</style>
+</head><body>
+<script>
+  // alert()을 예쁜 토스트로 바꿔주기 (아이패드에서도 잘 보이게)
+  window.alert = function(msg) {
+    const div = document.createElement('div');
+    div.className = 'toast-alert';
+    div.textContent = String(msg);
+    document.body.appendChild(div);
+    setTimeout(function(){ div.classList.add('hiding'); }, 2200);
+    setTimeout(function(){ div.remove(); }, 2600);
+  };
+<\/script>
+${code}</body></html>`;
+  preview.srcdoc = doc;
+
+  // 코드 저장
+  const stageId = STAGES[state.currentStage].id;
+  state.codes[stageId] = code;
+  saveState();
+
+  // 에러 체크 - 태그 안 닫힌 것 같으면 힌트 버튼 반짝이게
+  checkForErrors(code);
+}
+
+function checkForErrors(code) {
+  const hintBtn = document.getElementById('hintBtn');
+  if (!code.trim()) {
+    hintBtn.classList.remove('glow');
+    return;
+  }
+  // 간단한 태그 매칭 검사
+  const openTags = (code.match(/<[a-zA-Z][^\/>]*>/g) || []).length;
+  const closeTags = (code.match(/<\/[a-zA-Z][^>]*>/g) || []).length;
+  const selfClosing = (code.match(/<(br|img|hr|input|meta|link)[^>]*>/g) || []).length;
+
+  // 열린 태그 개수와 닫힌 태그 개수가 다르면 에러 힌트
+  if (openTags - selfClosing !== closeTags && openTags > 0) {
+    hintBtn.classList.add('glow');
+  } else {
+    hintBtn.classList.remove('glow');
+  }
+}
+
+let previewTimer;
+codeInput.addEventListener('input', () => {
+  clearTimeout(previewTimer);
+  previewTimer = setTimeout(updatePreview, 150);
+  scheduleAutoSave();
+});
+
+// Tab 키로 들여쓰기
+codeInput.addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const start = codeInput.selectionStart;
+    const end = codeInput.selectionEnd;
+    codeInput.value = codeInput.value.substring(0, start) + '  ' + codeInput.value.substring(end);
+    codeInput.selectionStart = codeInput.selectionEnd = start + 2;
+    updatePreview();
+  }
+});
+
+// ============================================
+// 버튼 이벤트
+// ============================================
+document.getElementById('hintBtn').addEventListener('click', () => {
+  const stage = STAGES[state.currentStage];
+  const hintBox = document.getElementById('hintBox');
+  hintBox.innerHTML = `<div class="hint-box"><div class="title">💡 힌트</div>${stage.hint}</div>`;
+  hintBox.hidden = false;
+});
+
+function showAnswerModal() {
+  const m = document.getElementById('answerModal');
+  m.removeAttribute('hidden');
+  m.style.display = 'flex';
+}
+function hideAnswerModal() {
+  const m = document.getElementById('answerModal');
+  m.setAttribute('hidden', '');
+  m.style.display = 'none';
+}
+document.getElementById('answerBtn').addEventListener('click', () => {
+  showAnswerModal();
+});
+document.getElementById('answerYes').addEventListener('click', () => {
+  const stage = STAGES[state.currentStage];
+  codeInput.value = stage.answer;
+  updatePreview();
+  hideAnswerModal();
+});
+document.getElementById('answerNo').addEventListener('click', () => {
+  hideAnswerModal();
+});
+
+document.getElementById('prevBtn').addEventListener('click', () => {
+  if (state.currentStage > 0) {
+    state.currentStage--;
+    saveState();
+    render();
+  }
+});
+
+document.getElementById('nextBtn').addEventListener('click', () => {
+  if (state.currentStage < STAGES.length - 1) {
+    state.currentStage++;
+    saveState();
+    render();
+  }
+});
+
+// 도전 모드 상태
+let inChallengeMode = false;
+
+function goToNextStage() {
+  if (state.currentStage < STAGES.length - 1) {
+    state.currentStage++;
+    inChallengeMode = false;
+    saveState();
+    render();
+  }
+}
+
+// 모달 확실하게 열고 닫기
+function showChallengeModal() {
+  const m = document.getElementById('challengeModal');
+  m.removeAttribute('hidden');
+  m.style.display = 'flex';
+}
+function hideChallengeModal() {
+  const m = document.getElementById('challengeModal');
+  m.setAttribute('hidden', '');
+  m.style.display = 'none';
+}
+
+// 정답 체크
+function isCorrect(stage, code) {
+  if (!code || !code.trim()) return false;
+  if (!stage.check) return true;
+  return stage.check.test(code);
+}
+
+// 틀렸을 때 메시지
+function showWrong() {
+  const msg = document.getElementById('wrongMsg');
+  const shortName = getShortName(state.name);
+  const messages = [
+    `😅 아직 아니야ㅠㅠ\n다시 해봐 ${shortName}!`,
+    `🤔 조금만 더!\n힌트 눌러봐 ${shortName}!`,
+    `😢 앗, 아직 틀렸어ㅠㅠ\n포기하지 마 ${shortName}!`,
+    `💪 거의 다 왔어!\n다시 한번 ${shortName}!`
+  ];
+  msg.textContent = messages[Math.floor(Math.random() * messages.length)];
+  msg.classList.add('show');
+  // 힌트 버튼도 반짝이게
+  document.getElementById('hintBtn').classList.add('glow');
+  setTimeout(() => msg.classList.remove('show'), 2200);
+}
+
+document.getElementById('completeBtn').addEventListener('click', () => {
+  const stage = STAGES[state.currentStage];
+  const code = document.getElementById('codeInput').value;
+  const correct = isCorrect(stage, code);
+
+  // 틀리면 여기서 끝 - 완료 처리 안 함, 축하 애니메이션 없음
+  if (!correct) {
+    showWrong();
+    return;
+  }
+
+  // 정답 - 이미 도전 모드였으면 축하 + 다음 단계
+  if (inChallengeMode) {
+    celebrate();
+    setTimeout(goToNextStage, 1800);
+    return;
+  }
+
+  // 정답 - 처음 완료 처리
+  if (!state.completedStages.includes(stage.id)) {
+    state.completedStages.push(stage.id);
+    saveState();
+  }
+
+  // 마지막(자유 창작) 단계면 도전 없이 축하만
+  if (state.currentStage === STAGES.length - 1) {
+    celebrate();
+    render();
+    return;
+  }
+
+  // 도전 미션 물어보기
+  showChallengeModal();
+});
+
+// 도전 미션 - 응
+document.getElementById('challengeYes').addEventListener('click', () => {
+  hideChallengeModal();
+  inChallengeMode = true;
+  document.querySelector('.mission-box').style.display = 'none';
+  document.querySelector('.challenge-box').classList.add('active-challenge');
+  document.querySelector('.challenge-box .title').innerHTML = '⭐ 지금 도전 중! 아래 해보고 완료 누르기';
+  document.getElementById('completeBtn').textContent = '🌟 도전 완료 → 다음 단계';
+});
+
+// 도전 미션 - 아니
+document.getElementById('challengeNo').addEventListener('click', () => {
+  hideChallengeModal();
+  celebrate();
+  setTimeout(goToNextStage, 1800);
+});
+
+// 처음부터 모달 열고 닫기
+function showResetModal() {
+  const m = document.getElementById('resetModal');
+  m.removeAttribute('hidden');
+  m.style.display = 'flex';
+}
+function hideResetModal() {
+  const m = document.getElementById('resetModal');
+  m.setAttribute('hidden', '');
+  m.style.display = 'none';
+}
+
+// ============================================
+// JSONBin 클라우드 (반 공유 + 실시간 방식)
+// ============================================
+const JSONBIN_KEY = "$2a$10$NIj5ay0LyGnCMs/QyRVyQOQlYNMZ/lvyW7oRqmyjDSYgYX6bb.XH2";
+
+function showCloudToast(msg, type) {
+  const t = document.getElementById('cloudToast');
+  t.textContent = msg;
+  t.className = type || '';
+  requestAnimationFrame(() => t.classList.add('show'));
+  const dur = msg.length > 40 ? 5000 : 2500;
+  setTimeout(() => t.classList.remove('show'), dur);
+}
+
+// 학생 데이터 저장
+async function saveToCloud(silent) {
+  if (!state.binId || !state.name) return;
+  const saveBtn = document.getElementById('saveBtn');
+  if (!silent && saveBtn) {
+    saveBtn.disabled = true;
+    saveBtn.textContent = '💾 저장 중...';
+  }
+  try {
+    // 현재 bin 데이터 가져오기 (다른 학생 거 안 지우게)
+    const getRes = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!getRes.ok) throw new Error('반 불러오기 실패');
+    const gj = await getRes.json();
+    const current = gj.record || { students: {} };
+    if (!current.students) current.students = {};
+
+    // 내 데이터만 업데이트
+    current.students[state.name] = {
+      currentStage: state.currentStage,
+      completedStages: state.completedStages,
+      codes: state.codes,
+      currentCode: document.getElementById('codeInput') ? document.getElementById('codeInput').value : '',
+      savedAt: new Date().toISOString()
+    };
+
+    // PUT
+    const putRes = await fetch('https://api.jsonbin.io/v3/b/' + state.binId, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY
+      },
+      body: JSON.stringify(current)
+    });
+    if (!putRes.ok) throw new Error('저장 실패');
+
+    if (!silent) showCloudToast('☁️ 저장 완료!', 'success');
+  } catch (err) {
+    if (!silent) showCloudToast('😢 저장 실패: ' + err.message, 'error');
+  } finally {
+    if (!silent && saveBtn) {
+      saveBtn.disabled = false;
+      saveBtn.textContent = '💾 저장';
+    }
+  }
+}
+
+async function loadFromCloud() {
+  if (!state.binId || !state.name) return;
+  const loadBtn = document.getElementById('loadBtn');
+  if (loadBtn) {
+    loadBtn.disabled = true;
+    loadBtn.textContent = '📥 불러오는 중...';
+  }
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) throw new Error('불러오기 실패');
+    const result = await res.json();
+    const data = result.record || {};
+    const myData = data.students && data.students[state.name];
+    if (!myData) {
+      showCloudToast('아직 저장한 게 없어!', 'error');
+      return;
+    }
+    if (typeof myData.currentStage === 'number') state.currentStage = myData.currentStage;
+    if (Array.isArray(myData.completedStages)) state.completedStages = myData.completedStages;
+    if (myData.codes) state.codes = myData.codes;
+    saveState();
+    render();
+    showCloudToast('☁️ 불러왔어!', 'success');
+  } catch (err) {
+    showCloudToast('😢 실패: ' + err.message, 'error');
+  } finally {
+    if (loadBtn) {
+      loadBtn.disabled = false;
+      loadBtn.textContent = '📥 불러오기';
+    }
+  }
+}
+
+document.getElementById('saveBtn').addEventListener('click', () => saveToCloud(false));
+document.getElementById('loadBtn').addEventListener('click', loadFromCloud);
+
+// ============================================
+// 자동저장 (학생이 코드 칠 때마다)
+// ============================================
+let autoSaveTimer = null;
+function scheduleAutoSave() {
+  if (state.mode !== 'student') return;
+  if (autoSaveTimer) clearTimeout(autoSaveTimer);
+  autoSaveTimer = setTimeout(() => { saveToCloud(true); }, 2000);
+}
+
+// ============================================
+// 선생님 대시보드: 학생 상태 폴링
+// ============================================
+let teacherPollingTimer = null;
+let teacherCache = {}; // 이전 데이터 캐시 (변경 감지용)
+
+function startTeacherPolling() {
+  stopTeacherPolling();
+  fetchAndRenderStudents();
+  teacherPollingTimer = setInterval(fetchAndRenderStudents, 2500);
+}
+function stopTeacherPolling() {
+  if (teacherPollingTimer) {
+    clearInterval(teacherPollingTimer);
+    teacherPollingTimer = null;
+  }
+}
+
+async function fetchAndRenderStudents() {
+  if (!state.binId) return;
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) return;
+    const result = await res.json();
+    const data = result.record || {};
+    teacherCache = data;
+    renderTeacherDashboard();
+  } catch(e) {}
+}
+
+function renderTeacherDashboard() {
+  document.getElementById('dashboardTitle').textContent = '🎓 ' + (state.className || '반 이름');
+  document.getElementById('dashboardTeacher').textContent = state.teacherName || '';
+  document.getElementById('dashboardCode').textContent = state.classCode;
+  document.getElementById('dashboardCount').textContent = (state.roster || []).length;
+
+  const grid = document.getElementById('studentGrid');
+  grid.innerHTML = '';
+  const students = (teacherCache && teacherCache.students) || {};
+  const roster = state.roster || (teacherCache && teacherCache.roster) || [];
+
+  roster.forEach(name => {
+    const s = students[name];
+    const card = document.createElement('div');
+    card.className = 'student-card';
+
+    let statusClass = '';
+    let statusText = '⏸ 아직 안 함';
+    let stageText = '-';
+    if (s) {
+      const totalStages = STAGES.length;
+      const done = (s.completedStages || []).length;
+      if (done >= totalStages) {
+        statusClass = 'done';
+        statusText = '🎉 완료!';
+      } else {
+        statusClass = 'active';
+        statusText = '💻 진행 중';
+      }
+      const currentStageIdx = typeof s.currentStage === 'number' ? s.currentStage : 0;
+      const stg = STAGES[currentStageIdx];
+      stageText = (stg ? stg.title : '') + ' · 완료 ' + done + '/' + totalStages;
+    }
+
+    card.innerHTML = `
+      <div class="top">
+        <div class="name">${escapeHtml(name)}</div>
+        <div class="status ${statusClass}">${statusText}</div>
+      </div>
+      <div class="stage-info">${escapeHtml(stageText)}</div>
+    `;
+
+    if (s && (s.currentCode || (s.codes && Object.keys(s.codes).length > 0))) {
+      const iframe = document.createElement('iframe');
+      const currentCode = s.currentCode || (s.codes && s.codes[STAGES[s.currentStage] && STAGES[s.currentStage].id]) || '';
+      iframe.srcdoc = wrapStudentPreview(currentCode);
+      card.appendChild(iframe);
+    } else {
+      const nd = document.createElement('div');
+      nd.className = 'no-data';
+      nd.textContent = '아직 코드를 안 쳤어요';
+      card.appendChild(nd);
+    }
+
+    card.addEventListener('click', () => openStudentZoom(name, s));
+    grid.appendChild(card);
+  });
+}
+
+function wrapStudentPreview(code) {
+  return `<!DOCTYPE html><html><head><meta charset="UTF-8"><style>body{font-family:sans-serif;padding:8px;margin:0;font-size:12px;}</style></head><body><script>window.alert=function(m){var d=document.createElement('div');d.style.cssText='position:fixed;top:5px;left:5px;right:5px;background:#fff;padding:6px 10px;border-radius:6px;border:2px solid #ff8a80;font-size:11px;';d.textContent=String(m);document.body.appendChild(d);setTimeout(function(){d.remove();},1500);};<\/script>${code}</body></html>`;
+}
+
+function escapeHtml(s) {
+  return String(s || '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+}
+
+// 학생 화면 크게 보기
+function openStudentZoom(name, s) {
+  const modal = document.getElementById('studentZoomModal');
+  modal.removeAttribute('hidden');
+  modal.style.display = 'flex';
+  document.getElementById('zoomTitle').textContent = '👀 ' + name + '의 화면';
+  const currentCode = (s && (s.currentCode || (s.codes && s.codes[STAGES[s.currentStage] && STAGES[s.currentStage].id]))) || '';
+  document.getElementById('zoomCode').textContent = currentCode || '(아직 코드 없음)';
+  document.getElementById('zoomPreview').srcdoc = wrapStudentPreview(currentCode);
+}
+document.getElementById('closeZoomBtn').addEventListener('click', () => {
+  const modal = document.getElementById('studentZoomModal');
+  modal.setAttribute('hidden', '');
+  modal.style.display = 'none';
+});
+
+document.getElementById('resetBtn').addEventListener('click', () => {
+  showResetModal();
+});
+document.getElementById('resetYes').addEventListener('click', () => {
+  localStorage.removeItem(STORAGE_KEY);
+  location.reload();
+});
+document.getElementById('resetNo').addEventListener('click', () => {
+  hideResetModal();
+});
+
+// ============================================
+// 색종이 축하 애니메이션
+// ============================================
+function celebrate() {
+  const colors = ['#ff8a80', '#a5d8ff', '#ffd43b', '#95d5b2', '#ffb3d9', '#c9a5ff'];
+  const confetti = document.getElementById('confetti');
+
+  for (let i = 0; i < 80; i++) {
+    const piece = document.createElement('div');
+    piece.className = 'confetti-piece';
+    piece.style.left = Math.random() * 100 + 'vw';
+    piece.style.background = colors[Math.floor(Math.random() * colors.length)];
+    piece.style.animationDuration = (2 + Math.random() * 2) + 's';
+    piece.style.animationDelay = Math.random() * 0.5 + 's';
+    piece.style.transform = `rotate(${Math.random() * 360}deg)`;
+    confetti.appendChild(piece);
+    setTimeout(() => piece.remove(), 4500);
+  }
+
+  const msg = document.getElementById('celebrationMsg');
+  const shortName = getShortName(state.name);
+  const messages = [
+    `🎉 잘했어 ${shortName}아!`,
+    `🎉 대단해 ${shortName}!`,
+    `🌟 최고야 ${shortName}!`,
+    `🚀 완벽해 ${shortName}!`
+  ];
+  msg.textContent = messages[Math.floor(Math.random() * messages.length)];
+  msg.classList.add('show');
+  setTimeout(() => msg.classList.remove('show'), 1800);
+}
+
+// ============================================
+// 초기화
+// ============================================
+loadState();
+
+// URL에 반 코드 있으면 로그인 화면에 자동으로 채워주기
+try {
+  const params = new URLSearchParams(window.location.search);
+  const urlCode = params.get('class');
+  if (urlCode) {
+    document.getElementById('classCodeInput').value = urlCode;
+  }
+} catch(e) {}
+
+if (state.mode === 'teacher' && state.binId) {
+  showScreen('teacher');
+  renderTeacherDashboard();
+} else if (state.mode === 'student' && state.binId && state.name) {
+  showScreen('student');
+  render();
+} else {
+  state.mode = 'login';
+  showScreen('login');
+}
+</script>
+</body>
+</html>
