@@ -1084,11 +1084,12 @@ const STAGES = [
     mission: `아래처럼 쳐봐:
 <pre>&lt;h1 style="color: red;"&gt;빨간 글자!&lt;/h1&gt;</pre>
 그 다음 <code>red</code>를 <code>blue</code>, <code>green</code>, <code>purple</code>로 바꿔봐!`,
-    challenge: `<code>;</code>(세미콜론)으로 나눠서 <b>여러 개 꾸미기</b>!
-<pre>&lt;h1 style="color: white; background-color: hotpink;"&gt;
+    challenge: `이번엔 <b>글자색 + 배경색 + 크기</b>를 한꺼번에!<br>
+스타일 여러 개는 세미콜론(<code>;</code>)으로 나눠서 써.
+<pre>&lt;h1 style="color: white; background-color: hotpink; font-size: 60px;"&gt;
   꾸민 글자!
 &lt;/h1&gt;</pre>
-<code>hotpink</code>를 다른 색으로 바꿔봐 (skyblue, gold, tomato 등).`,
+<code>hotpink</code>나 <code>white</code>를 다른 색으로 바꿔봐 (skyblue, gold, tomato 등).`,
     hint: `따옴표 <code>"</code> 두 개 다 있어? <code>;</code>(세미콜론) 안 빼먹었지?`,
     answer: `<h1 style="color: red;">빨간 글자!</h1>`,
     starter: ``,
@@ -1677,9 +1678,10 @@ function render() {
   document.getElementById('hintBox').hidden = true;
   document.getElementById('hintBtn').classList.remove('glow');
 
-  // 도전 모드 UI 리셋
+  // 도전 모드 UI 리셋 - 일반 모드로 (기본 미션만 보임, 도전 미션 숨김)
   inChallengeMode = false;
   document.querySelector('.mission-box').style.display = '';
+  document.querySelector('.challenge-box').style.display = 'none';
   document.querySelector('.challenge-box').classList.remove('active-challenge');
   document.querySelector('.challenge-box .title').innerHTML = '⭐ 도전 미션 (더 잘하는 사람만!)';
 
@@ -1936,7 +1938,9 @@ document.getElementById('completeBtn').addEventListener('click', () => {
 document.getElementById('challengeYes').addEventListener('click', () => {
   hideChallengeModal();
   inChallengeMode = true;
+  // 기본 미션 숨기고 도전 미션 나오게
   document.querySelector('.mission-box').style.display = 'none';
+  document.querySelector('.challenge-box').style.display = '';
   document.querySelector('.challenge-box').classList.add('active-challenge');
   document.querySelector('.challenge-box .title').innerHTML = '⭐ 지금 도전 중! 아래 해보고 완료 누르기';
   document.getElementById('completeBtn').textContent = '🌟 도전 완료 → 다음 단계';
