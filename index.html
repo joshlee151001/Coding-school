@@ -850,8 +850,8 @@
     margin-bottom: 6px;
   }
   .timer-field input[type=date] { width: 100%; }
-  .ampm-row { display: flex; gap: 8px; }
-  .ampm-btn {
+  .ampm-row, .honorific-row { display: flex; gap: 8px; }
+  .ampm-btn, .honorific-btn {
     flex: 1;
     padding: 12px;
     background: #f7f0e8;
@@ -863,11 +863,13 @@
     cursor: pointer;
     color: #7a6a5a;
   }
-  .ampm-btn.selected {
+  .ampm-btn.selected, .honorific-btn.selected {
     background: #d0ebff;
     border-color: #4a9eff;
     color: #1971c2;
   }
+  .honorific-btn:hover { background: #ffe8d6; }
+  .honorific-btn.selected:hover { background: #a5d8ff; }
   .hm-row {
     display: flex; align-items: center; gap: 8px;
     justify-content: center;
@@ -1739,7 +1741,13 @@
     <input id="classNameInput" type="text" placeholder="예: 5학년 1반">
 
     <label>선생님 이름</label>
-    <input id="teacherNameInput" type="text" placeholder="예: 태윤">
+    <input id="teacherNameInput" type="text" placeholder="예: 김태윤 (성까지)">
+
+    <label>학생들이 선생님 부르는 방식</label>
+    <div class="honorific-row">
+      <button type="button" class="honorific-btn" data-honorific="ge">에게 (친근하게)</button>
+      <button type="button" class="honorific-btn" data-honorific="ke">께 (예의있게)</button>
+    </div>
 
     <label>반 코드 (8자리 숫자, 학생한테 알려줄 코드)</label>
     <div class="add-row">
@@ -2246,6 +2254,7 @@ let state = {
   binId: '',           // JSONBin 실제 bin ID (내부에서만 씀)
   className: '',
   teacherName: '',
+  teacherHonorific: 'ge', // 'ge' (에게) or 'ke' (께)
   name: '',            // 학생 이름
   currentStage: 0,
   completedStages: [],
@@ -2312,9 +2321,40 @@ function saveState() {
 // 이름에서 성 떼기 (홍길동 → 길동, 이솔 → 솔)
 // ============================================
 function getShortName(fullName) {
-  const trimmed = fullName.trim();
+  const trimmed = (fullName || '').trim();
   if (trimmed.length <= 1) return trimmed;
   return trimmed.slice(1);
+}
+
+// 한글 마지막 글자에 받침이 있는지
+function hasBatchim(name) {
+  if (!name) return false;
+  const lastChar = name[name.length - 1];
+  const code = lastChar.charCodeAt(0);
+  if (code < 0xAC00 || code > 0xD7A3) return false; // 한글이 아님
+  return (code - 0xAC00) % 28 !== 0;
+}
+
+// 부르는 말 (아/야): 잘했어 태윤아 / 수아야
+function vocative(name) {
+  if (!name) return '';
+  return name + (hasBatchim(name) ? '아' : '야');
+}
+
+// 이/가 (있으면 이가, 없으면 가): 태윤이가 / 수아가
+function subjectParticle(name) {
+  if (!name) return '';
+  return name + (hasBatchim(name) ? '이가' : '가');
+}
+
+// 선생님 호칭 (에게/께): 태윤이에게 / 수아에게 / 태윤이께 / 수아께
+function teacherAddress() {
+  const teacherShort = getShortName(state.teacherName || '');
+  if (!teacherShort) return '선생님';
+  // 받침 있으면 "이" 붙이기
+  const withI = hasBatchim(teacherShort) ? teacherShort + '이' : teacherShort;
+  const particle = state.teacherHonorific === 'ke' ? '께' : '에게';
+  return withI + particle;
 }
 
 // ============================================
@@ -2327,11 +2367,11 @@ function showScreen(screen) {
   document.getElementById('teacherDashboard').hidden = true;
   document.getElementById('studentChoose').hidden = true;
   document.getElementById('freeCoding').hidden = true;
-  document.querySelector('header').hidden = true;
+  document.querySelector('body > header').hidden = true;
   document.getElementById('saveInfo').hidden = true;
   document.getElementById('previewBanner').hidden = true;
-  document.querySelector('main').hidden = true;
-  document.querySelector('footer').hidden = true;
+  document.querySelector('body > main').hidden = true;
+  document.querySelector('body > footer').hidden = true;
   stopTimerDisplay();
 
   if (screen === 'login') {
@@ -2347,10 +2387,10 @@ function showScreen(screen) {
     startTeacherPolling();
     startTimerDisplay();
   } else if (screen === 'student') {
-    document.querySelector('header').hidden = false;
+    document.querySelector('body > header').hidden = false;
     document.getElementById('saveInfo').hidden = false;
-    document.querySelector('main').hidden = false;
-    document.querySelector('footer').hidden = false;
+    document.querySelector('body > main').hidden = false;
+    document.querySelector('body > footer').hidden = false;
     stopTeacherPolling();
     startStudentPolling();
     startTimerDisplay();
@@ -2365,13 +2405,14 @@ function showScreen(screen) {
     document.getElementById('rankingBtn').style.display = '';
     // 도움 요청 상태 반영
     const helpBtn = document.getElementById('helpBtn');
-    if (state.needsHelp) { helpBtn.classList.add('active'); helpBtn.textContent = '🙋 도움 요청 중...'; }
-    else { helpBtn.classList.remove('active'); helpBtn.textContent = '🙋 도움 요청'; }
+    if (state.needsHelp) { helpBtn.classList.add('active'); }
+    else { helpBtn.classList.remove('active'); }
+    updateHelpBtnLabel();
   } else if (screen === 'preview') {
-    document.querySelector('header').hidden = false;
+    document.querySelector('body > header').hidden = false;
     document.getElementById('previewBanner').hidden = false;
-    document.querySelector('main').hidden = false;
-    document.querySelector('footer').hidden = false;
+    document.querySelector('body > main').hidden = false;
+    document.querySelector('body > footer').hidden = false;
     stopTeacherPolling();
     stopStudentPolling();
     // 미리보기에서는 저장/불러오기/처음부터/메뉴/도움/자유코딩 숨김 (사전은 미리보기에서도 유용해서 보임)
@@ -2500,6 +2541,7 @@ async function studentLogin() {
     state.binId = binId;
     state.className = data.className || '';
     state.teacherName = data.teacherName || '';
+    state.teacherHonorific = data.teacherHonorific || 'ge';
     state.name = name;
 
     // 저장된 데이터 있으면 불러오기
@@ -2755,6 +2797,23 @@ document.getElementById('randomCodeBtn').addEventListener('click', () => {
   document.getElementById('customCodeInput').value = code;
 });
 
+// 호칭 선택 (에게/께)
+let selectedHonorific = 'ge';
+function updateHonorificButtons() {
+  document.querySelectorAll('.honorific-btn').forEach(b => {
+    if (b.dataset.honorific === selectedHonorific) b.classList.add('selected');
+    else b.classList.remove('selected');
+  });
+}
+document.querySelectorAll('.honorific-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    selectedHonorific = b.dataset.honorific;
+    updateHonorificButtons();
+  });
+});
+// 기본 선택
+updateHonorificButtons();
+
 // 반 만들기 제출
 document.getElementById('createClassSubmit').addEventListener('click', async () => {
   const errorEl = document.getElementById('teacherSetupError');
@@ -2797,6 +2856,7 @@ document.getElementById('createClassSubmit').addEventListener('click', async () 
         classCode: customCode,
         className: className,
         teacherName: teacherName,
+        teacherHonorific: selectedHonorific,
         roster: setupRoster,
         students: {},
         createdAt: new Date().toISOString()
@@ -2812,6 +2872,7 @@ document.getElementById('createClassSubmit').addEventListener('click', async () 
     state.binId = binId;
     state.className = className;
     state.teacherName = teacherName;
+    state.teacherHonorific = selectedHonorific;
     state.roster = setupRoster.slice();
     saveState();
     // 코드→binId 캐시 저장
@@ -3162,10 +3223,10 @@ function showWrong() {
   const msg = document.getElementById('wrongMsg');
   const shortName = getShortName(state.name);
   const messages = [
-    `😅 아직 아니야ㅠㅠ\n다시 해봐 ${shortName}!`,
-    `🤔 조금만 더!\n힌트 눌러봐 ${shortName}!`,
-    `😢 앗, 아직 틀렸어ㅠㅠ\n포기하지 마 ${shortName}!`,
-    `💪 거의 다 왔어!\n다시 한번 ${shortName}!`
+    `😅 아직 아니야ㅠㅠ\n다시 해봐 ${vocative(shortName)}!`,
+    `🤔 조금만 더!\n힌트 눌러봐 ${vocative(shortName)}!`,
+    `😢 앗, 아직 틀렸어ㅠㅠ\n포기하지 마 ${vocative(shortName)}!`,
+    `💪 거의 다 왔어!\n다시 한번 ${vocative(shortName)}!`
   ];
   msg.textContent = messages[Math.floor(Math.random() * messages.length)];
   msg.classList.add('show');
@@ -3321,11 +3382,11 @@ async function saveToCloud(silent) {
       if (btn) {
         if (cloudHelp) {
           btn.classList.add('active');
-          btn.textContent = '🙋 도움 요청 중...';
+          btn.textContent = getHelpBtnLabel(true);
         } else {
           btn.classList.remove('active');
-          btn.textContent = '🙋 도움 요청';
-          if (wasHelping) showCloudToast('✅ 선생님이 확인함!', 'success');
+          btn.textContent = getHelpBtnLabel(false);
+          if (wasHelping) showCloudToast('✅ ' + teacherAddress() + ' 확인됨!', 'success');
         }
       }
     }
@@ -3781,16 +3842,25 @@ document.getElementById('certDownloadBtn').addEventListener('click', async () =>
 // ============================================
 // 도움 요청
 // ============================================
+function getHelpBtnLabel(active) {
+  const to = teacherAddress();
+  return '🙋 ' + to + (active ? ' 요청 중...' : ' 요청');
+}
+function updateHelpBtnLabel() {
+  const btn = document.getElementById('helpBtn');
+  if (!btn) return;
+  btn.textContent = getHelpBtnLabel(state.needsHelp);
+}
 document.getElementById('helpBtn').addEventListener('click', async () => {
   state.needsHelp = !state.needsHelp;
   const btn = document.getElementById('helpBtn');
   if (state.needsHelp) {
     btn.classList.add('active');
-    btn.textContent = '🙋 도움 요청 중...';
-    showCloudToast('🙋 선생님한테 도움 요청했어!', 'success');
+    btn.textContent = getHelpBtnLabel(true);
+    showCloudToast('🙋 ' + teacherAddress() + ' 도움 요청했어!', 'success');
   } else {
     btn.classList.remove('active');
-    btn.textContent = '🙋 도움 요청';
+    btn.textContent = getHelpBtnLabel(false);
     showCloudToast('도움 요청 취소', 'success');
   }
   saveState();
@@ -3843,11 +3913,11 @@ async function checkBroadcast() {
       if (btn) {
         if (cloudHelp) {
           btn.classList.add('active');
-          btn.textContent = '🙋 도움 요청 중...';
+          btn.textContent = getHelpBtnLabel(true);
         } else {
           btn.classList.remove('active');
-          btn.textContent = '🙋 도움 요청';
-          if (wasHelping) showCloudToast('✅ 선생님이 확인함!', 'success');
+          btn.textContent = getHelpBtnLabel(false);
+          if (wasHelping) showCloudToast('✅ ' + teacherAddress() + ' 확인됨!', 'success');
         }
       }
     }
@@ -4447,7 +4517,7 @@ function celebrate() {
   const msg = document.getElementById('celebrationMsg');
   const shortName = getShortName(state.name);
   const messages = [
-    `🎉 잘했어 ${shortName}아!`,
+    `🎉 잘했어 ${vocative(shortName)}!`,
     `🎉 대단해 ${shortName}!`,
     `🌟 최고야 ${shortName}!`,
     `🚀 완벽해 ${shortName}!`
