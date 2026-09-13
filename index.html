@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>디벗부 코딩교실</title>
+<title>코딩교실</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body {
@@ -359,6 +359,709 @@
   @media (max-width: 700px) {
     #studentZoomModal .zoom-body { grid-template-columns: 1fr; }
   }
+
+  /* ===== 학생 모드 선택 화면 ===== */
+  #studentChoose {
+    position: fixed; inset: 0;
+    background: linear-gradient(135deg, #ffe8d6 0%, #d0ebff 100%);
+    display: flex; align-items: center; justify-content: center;
+    z-index: 90;
+    padding: 20px;
+  }
+  #studentChoose[hidden] { display: none !important; }
+  #studentChoose .choose-box {
+    background: #fff;
+    padding: 36px 32px;
+    border-radius: 24px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.12);
+    max-width: 480px;
+    width: 100%;
+    text-align: center;
+  }
+  #studentChoose h1 {
+    font-size: 1.6em;
+    margin-bottom: 6px;
+    color: #ff8a80;
+  }
+  #studentChoose .subtitle { color: #7a7a7a; margin-bottom: 24px; font-size: 1em; }
+  .choose-btn {
+    display: block;
+    width: 100%;
+    padding: 22px 20px;
+    margin-bottom: 14px;
+    border: 3px solid transparent;
+    border-radius: 18px;
+    font-size: 1.1em;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: inherit;
+    text-align: left;
+    transition: transform 0.15s, box-shadow 0.15s;
+    position: relative;
+    line-height: 1.4;
+  }
+  .choose-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,0.1); }
+  .choose-btn:active { transform: translateY(0); }
+  .choose-btn small {
+    display: block;
+    font-size: 0.75em;
+    font-weight: 500;
+    color: rgba(0,0,0,0.55);
+    margin-top: 4px;
+  }
+  .choose-btn.recommended {
+    background: linear-gradient(135deg, #ffb3ba 0%, #ffdfba 100%);
+    border-color: #ff8a80;
+    color: #c92a2a;
+  }
+  .choose-btn.free {
+    background: linear-gradient(135deg, #bae1ff 0%, #baffc9 100%);
+    color: #1971c2;
+  }
+  .recommended-badge {
+    position: absolute;
+    top: -10px; right: 14px;
+    background: #ff8a80;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: 700;
+    box-shadow: 0 4px 8px rgba(255,138,128,0.35);
+  }
+  #chooseLogoutBtn {
+    background: none;
+    border: 1px solid #e0d5c8;
+    color: #7a6a5a;
+    padding: 8px 16px;
+    border-radius: 10px;
+    cursor: pointer;
+    font-family: inherit;
+    margin-top: 10px;
+    font-size: 0.9em;
+  }
+  #chooseLogoutBtn:hover { background: #f7f0e8; }
+
+  /* ===== 자유 코딩 화면 ===== */
+  #freeCoding {
+    position: fixed; inset: 0;
+    z-index: 80;
+    display: flex; flex-direction: column;
+    background: #fdf6f0;
+  }
+  #freeCoding[hidden] { display: none !important; }
+  #freeCoding header {
+    background: #fff;
+    padding: 14px 24px;
+    border-bottom: 2px solid #f0e6dc;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  #freeCoding header h1 { font-size: 1.3em; color: #4a9eff; }
+  #freeCoding header .free-btns { display: flex; gap: 8px; }
+  #freeCoding header button {
+    background: #d0ebff;
+    border: 1px solid #a5d8ff;
+    color: #1971c2;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  #freeCoding header button:hover { background: #a5d8ff; }
+  #freeCoding main {
+    flex: 1;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    padding: 12px;
+    min-height: 0;
+  }
+  #freeCoding main > section {
+    background: #fff;
+    border-radius: 16px;
+    padding: 18px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+    display: flex; flex-direction: column;
+    min-height: 0;
+  }
+  #freeCodeInput {
+    flex: 1;
+    width: 100%;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+    padding: 14px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 1.02em;
+    line-height: 1.6;
+    background: #fef9f4;
+    color: #444;
+    resize: none;
+    outline: none;
+  }
+  #freeCodeInput:focus { border-color: #4a9eff; }
+  #freePreview {
+    flex: 1;
+    width: 100%;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+    background: #fff;
+  }
+  @media (max-width: 700px) {
+    #freeCoding main { grid-template-columns: 1fr; }
+  }
+
+  /* ===== 뱃지 ===== */
+  .badges-row {
+    display: flex; flex-wrap: wrap; gap: 6px;
+    margin-top: 12px;
+    justify-content: center;
+  }
+  .badge {
+    display: inline-flex; align-items: center; gap: 4px;
+    padding: 4px 10px;
+    background: linear-gradient(135deg, #fff9db 0%, #ffe8a3 100%);
+    border: 1px solid #ffd43b;
+    border-radius: 14px;
+    font-size: 0.85em;
+    font-weight: 600;
+    color: #7c5000;
+  }
+  .badges-in-card {
+    display: flex; flex-wrap: wrap; gap: 3px;
+    margin-top: 4px;
+  }
+  .badge-mini {
+    font-size: 1.2em;
+    line-height: 1;
+  }
+
+  /* ===== 뱃지 획득 알림 ===== */
+  #badgeAward {
+    position: fixed; top: 30%; left: 50%;
+    transform: translate(-50%, -50%) scale(0);
+    background: linear-gradient(135deg, #fff9db 0%, #ffe8a3 100%);
+    border: 4px solid #ffd43b;
+    padding: 24px 32px;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    z-index: 220;
+    text-align: center;
+    pointer-events: none;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    max-width: 90%;
+  }
+  #badgeAward.show { transform: translate(-50%, -50%) scale(1); }
+  #badgeAward .emoji { font-size: 3em; }
+  #badgeAward .title { font-size: 1.3em; font-weight: 700; color: #7c5000; margin-top: 4px; }
+  #badgeAward .desc { font-size: 0.95em; color: #a17c00; margin-top: 4px; }
+
+  /* ===== 도움 요청 ===== */
+  #helpBtn {
+    background: #ffe0e0 !important; border-color: #ffb3b3 !important;
+    color: #c92a2a !important; font-weight: 700 !important;
+  }
+  #helpBtn:hover { background: #ffc9c9 !important; }
+  #helpBtn.active {
+    background: #ff8a80 !important;
+    color: #fff !important;
+    animation: helpPulse 1s infinite;
+  }
+  @keyframes helpPulse {
+    0%, 100% { box-shadow: 0 0 0 0 rgba(255, 138, 128, 0.6); }
+    50% { box-shadow: 0 0 0 8px rgba(255, 138, 128, 0); }
+  }
+  .student-card.needs-help {
+    border: 3px solid #ff8a80;
+    background: linear-gradient(135deg, #fff 0%, #ffe0e0 100%);
+    animation: helpPulse 1.2s infinite;
+  }
+  .help-badge {
+    position: absolute; top: -8px; right: -8px;
+    background: #ff8a80;
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    font-weight: 700;
+    box-shadow: 0 4px 10px rgba(255,138,128,0.5);
+    animation: helpPulse 1s infinite;
+    cursor: pointer;
+  }
+  .student-card { position: relative; }
+
+  /* ===== 코드 색칠 (Syntax Highlighting) ===== */
+  .editor-wrap {
+    position: relative;
+    flex: 1;
+    min-height: 100px;
+  }
+  .editor-wrap .highlight-overlay,
+  .editor-wrap textarea {
+    position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+    margin: 0;
+    padding: 14px;
+    box-sizing: border-box;
+    font-family: 'SF Mono', Monaco, Consolas, 'Courier New', monospace !important;
+    font-size: 1.02em !important;
+    line-height: 1.6 !important;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    word-break: break-word;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+    tab-size: 2;
+  }
+  .editor-wrap textarea {
+    background: transparent !important;
+    color: transparent;
+    caret-color: #333;
+    resize: none;
+    outline: none;
+    z-index: 2;
+    -webkit-appearance: none;
+    -webkit-text-fill-color: transparent;
+  }
+  .editor-wrap textarea:focus { border-color: #ff8a80; }
+  .editor-wrap .highlight-overlay {
+    background: #fef9f4;
+    pointer-events: none;
+    overflow: hidden;
+    z-index: 1;
+    color: #444;
+  }
+  .editor-wrap.free-editor .highlight-overlay { background: #fef9f4; }
+  .editor-wrap.free-editor textarea:focus { border-color: #4a9eff; }
+  .hl-tag { color: #1971c2; font-weight: 600; }
+  .hl-attr { color: #2b8a3e; }
+  .hl-string { color: #d9480f; }
+  .hl-punct { color: #999; }
+  .hl-comment { color: #a89a8c; font-style: italic; }
+
+  /* ===== 화면 브로드캐스트 ===== */
+  #broadcastModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #broadcastModal[hidden] { display: none !important; }
+  #broadcastModal .box {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 800px; width: 100%;
+    max-height: 90vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  #broadcastModal .box header {
+    background: #ff8a80;
+    color: #fff;
+    padding: 14px 20px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  #broadcastModal .box header h2 { font-size: 1.1em; }
+  #broadcastModal .body {
+    padding: 20px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    overflow: auto;
+  }
+  #broadcastPreview {
+    width: 100%; height: 400px;
+    border: 2px solid #f0e6dc;
+    border-radius: 10px;
+    background: #fff;
+  }
+  #broadcastCode {
+    background: #fef9f4;
+    border-radius: 10px;
+    padding: 12px;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 0.9em;
+    white-space: pre-wrap;
+    word-break: break-all;
+    max-height: 400px;
+    overflow-y: auto;
+    color: #444;
+  }
+  @media (max-width: 700px) {
+    #broadcastModal .body { grid-template-columns: 1fr; }
+    #broadcastPreview { height: 250px; }
+    #broadcastCode { max-height: 200px; }
+  }
+
+  /* ===== 세션 타이머 ===== */
+  #timerRow {
+    background: #fff;
+    padding: 10px 24px;
+    border-bottom: 1px solid #f0e6dc;
+    display: flex; align-items: center; justify-content: space-between;
+    flex-wrap: wrap; gap: 12px;
+  }
+  #timerRow.warning { background: #fff9db; }
+  #timerRow.urgent { background: #ffe0e0; animation: helpPulse 1.5s infinite; }
+  #timerRow.over { background: #ffc9c9; }
+  #timerDisplay {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #333;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+  }
+  #timerRow button {
+    background: #d0ebff;
+    border: 1px solid #a5d8ff;
+    color: #1971c2;
+    padding: 6px 12px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+  #timerRow button:hover { background: #a5d8ff; }
+  #teacherViewRankingBtn {
+    background: #fff9db !important;
+    border-color: #ffd43b !important;
+    color: #a17c00 !important;
+  }
+  #teacherViewRankingBtn:hover { background: #ffec99 !important; }
+  #studentTimer {
+    background: #fef4ea;
+    color: #d2691e;
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 0.85em;
+    font-weight: 700;
+    padding: 4px 10px;
+    border-radius: 8px;
+    border: 1px solid #ffd8a8;
+    margin-right: 6px;
+  }
+  #studentTimer.warning { background: #fff9db; color: #a17c00; border-color: #ffe8a3; }
+  #studentTimer.urgent { background: #ffe0e0; color: #c92a2a; border-color: #ffb3b3; animation: helpPulse 1.2s infinite; }
+
+  /* 타이머 설정 모달 */
+  #timerSetModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.35);
+    z-index: 250;
+    display: flex; align-items: center; justify-content: center;
+  }
+  #timerSetModal[hidden] { display: none !important; }
+  #timerSetModal .modal-box {
+    background: #fff;
+    padding: 28px 24px;
+    border-radius: 20px;
+    max-width: 380px; width: calc(100% - 40px);
+    text-align: center;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.2);
+    animation: pop 0.3s;
+  }
+  #timerSetModal h2 { font-size: 1.3em; color: #1971c2; margin-bottom: 16px; }
+  #timerSetModal input[type=time],
+  #timerSetModal input[type=date],
+  #timerSetModal input[type=number] {
+    font-size: 1.1em;
+    padding: 10px 14px;
+    border: 2px solid #d0ebff;
+    border-radius: 10px;
+    font-family: inherit;
+    outline: none;
+  }
+  #timerSetModal input:focus { border-color: #4a9eff; }
+  .timer-field {
+    text-align: left;
+    margin-bottom: 12px;
+  }
+  .timer-field label {
+    display: block;
+    font-weight: 700;
+    color: #555;
+    font-size: 0.9em;
+    margin-bottom: 6px;
+  }
+  .timer-field input[type=date] { width: 100%; }
+  .ampm-row { display: flex; gap: 8px; }
+  .ampm-btn {
+    flex: 1;
+    padding: 12px;
+    background: #f7f0e8;
+    border: 2px solid transparent;
+    border-radius: 12px;
+    font-family: inherit;
+    font-size: 1em;
+    font-weight: 700;
+    cursor: pointer;
+    color: #7a6a5a;
+  }
+  .ampm-btn.selected {
+    background: #d0ebff;
+    border-color: #4a9eff;
+    color: #1971c2;
+  }
+  .hm-row {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center;
+  }
+  .hm-row input {
+    width: 80px;
+    text-align: center;
+    font-size: 1.4em !important;
+    font-weight: 700;
+  }
+  .hm-row span { font-weight: 700; color: #555; }
+  #timerSetModal .modal-buttons { display: flex; gap: 10px; margin-top: 16px; }
+  #timerSetModal .modal-buttons button {
+    flex: 1; padding: 12px; border: none; border-radius: 12px;
+    font-size: 1em; font-weight: 700; cursor: pointer; font-family: inherit;
+  }
+  #timerSetOk { background: #a5d8ff; color: #1971c2; }
+  #timerSetCancel { background: #e9ecef; color: #495057; }
+  #timerSetClear { background: #ffe0e0; color: #c92a2a; }
+
+  /* ===== 반 진행 상황 ===== */
+  #classStats {
+    background: #fff;
+    padding: 10px 24px;
+    display: flex; gap: 14px; flex-wrap: wrap;
+    align-items: center;
+    border-bottom: 1px solid #f0e6dc;
+    font-size: 0.9em;
+  }
+  #classStats .stat {
+    padding: 4px 12px;
+    border-radius: 12px;
+    font-weight: 600;
+  }
+  #classStats .stat.done { background: #d3f9d8; color: #2b8a3e; }
+  #classStats .stat.active { background: #d0ebff; color: #1971c2; }
+  #classStats .stat.idle { background: #f7f0e8; color: #a89a8c; }
+  #classStats .stat.help { background: #ffe0e0; color: #c92a2a; }
+
+  /* ===== 완주 랭킹 ===== */
+  #rankingSection {
+    background: #fff;
+    margin: 12px;
+    padding: 16px;
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+  }
+  #rankingSection h3 {
+    font-size: 1.1em;
+    color: #d4a017;
+    margin-bottom: 10px;
+  }
+  .rank-list { display: flex; flex-direction: column; gap: 6px; }
+  .rank-item {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 12px;
+    background: #fef9f4;
+    border-radius: 10px;
+  }
+  .rank-item .rank-num { font-weight: 700; font-size: 1.1em; min-width: 40px; }
+  .rank-item .rank-name { flex: 1; font-weight: 600; }
+  .rank-item .rank-info { font-size: 0.85em; color: #7a7a7a; }
+  .rank-item.rank-1 { background: linear-gradient(135deg, #fff9db 0%, #ffec99 100%); border: 1px solid #ffd43b; }
+  .rank-item.rank-2 { background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%); border: 1px solid #ced4da; }
+  .rank-item.rank-3 { background: linear-gradient(135deg, #ffe8d6 0%, #ffd8a8 100%); border: 1px solid #ffb37a; }
+
+  /* ===== 랭킹 모달 ===== */
+  #rankingModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.5);
+    z-index: 260;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #rankingModal[hidden] { display: none !important; }
+  #rankingModal .box {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 500px; width: 100%;
+    max-height: 85vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  #rankingModal header {
+    padding: 16px 20px;
+    background: linear-gradient(135deg, #ffd43b 0%, #ff8a80 100%);
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  #rankingModal header h2 { font-size: 1.2em; }
+  #rankingCloseBtn {
+    background: #fff; color: #c92a2a;
+    border: none; padding: 6px 12px;
+    border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-weight: 700;
+  }
+  #rankingModal .body {
+    padding: 16px;
+    overflow-y: auto;
+  }
+  #rankingBtn, #freeRankingBtn {
+    background: #fff9db !important;
+    border-color: #ffd43b !important;
+    color: #a17c00 !important;
+  }
+  #rankingBtn:hover, #freeRankingBtn:hover { background: #ffec99 !important; }
+
+  /* ===== 코드 사전 모달 ===== */
+  #dictModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.4);
+    z-index: 250;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+  }
+  #dictModal[hidden] { display: none !important; }
+  #dictModal .box {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 620px; width: 100%;
+    max-height: 85vh;
+    display: flex; flex-direction: column;
+    overflow: hidden;
+  }
+  #dictModal header {
+    padding: 16px 20px;
+    background: #4a9eff;
+    color: #fff;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  #dictModal header h2 { font-size: 1.1em; }
+  #dictModal .dict-list {
+    padding: 12px;
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .dict-item {
+    background: #fef9f4;
+    padding: 10px 12px;
+    border-radius: 10px;
+    cursor: pointer;
+    border: 2px solid transparent;
+    transition: all 0.15s;
+  }
+  .dict-item:hover {
+    border-color: #4a9eff;
+    background: #e7f5ff;
+    transform: translateY(-2px);
+  }
+  .dict-item .dict-name {
+    font-weight: 700;
+    color: #1971c2;
+    font-size: 0.95em;
+    margin-bottom: 3px;
+  }
+  .dict-item .dict-desc {
+    font-size: 0.8em;
+    color: #7a7a7a;
+    margin-bottom: 6px;
+  }
+  .dict-item .dict-code {
+    font-family: 'SF Mono', Monaco, Consolas, monospace;
+    font-size: 0.75em;
+    background: #fff;
+    padding: 4px 6px;
+    border-radius: 4px;
+    color: #444;
+    display: block;
+    word-break: break-all;
+    white-space: pre-wrap;
+    max-height: 3em;
+    overflow: hidden;
+  }
+  #dictCloseBtn {
+    background: #fff; color: #4a9eff;
+    border: none; padding: 6px 12px;
+    border-radius: 8px; cursor: pointer;
+    font-family: inherit; font-weight: 700;
+  }
+  @media (max-width: 500px) {
+    #dictModal .dict-list { grid-template-columns: 1fr; }
+  }
+  #dictBtn {
+    background: #e5dbff !important;
+    border-color: #b197fc !important;
+    color: #6741d9 !important;
+  }
+  #dictBtn:hover { background: #d0bfff !important; }
+
+  /* ===== 수료증 모달 ===== */
+  #certModal {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,0.7);
+    z-index: 300;
+    display: flex; align-items: center; justify-content: center;
+    padding: 20px;
+    overflow-y: auto;
+  }
+  #certModal[hidden] { display: none !important; }
+  #certModal .box {
+    background: #fff;
+    border-radius: 20px;
+    max-width: 700px; width: 100%;
+    padding: 24px;
+    text-align: center;
+    max-height: 95vh;
+    overflow-y: auto;
+  }
+  #certModal h2 {
+    color: #d4a017;
+    font-size: 1.5em;
+    margin-bottom: 10px;
+  }
+  #certModal canvas {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    box-shadow: 0 10px 40px rgba(0,0,0,0.15);
+    margin: 16px 0;
+  }
+  #certModal .btns { display: flex; gap: 10px; justify-content: center; flex-wrap: wrap; }
+  #certModal button {
+    padding: 12px 20px;
+    border: none;
+    border-radius: 12px;
+    font-family: inherit;
+    font-weight: 700;
+    cursor: pointer;
+    font-size: 0.95em;
+  }
+  #certDownloadBtn { background: #95d5b2; color: #fff; }
+  #certCloseBtn { background: #e9ecef; color: #495057; }
+
+  /* 선생님 카드의 공유 버튼 */
+  .card-actions {
+    display: flex; gap: 4px;
+    margin-top: 6px;
+  }
+  .card-actions button {
+    flex: 1;
+    padding: 4px 8px;
+    font-size: 0.75em;
+    background: #e7f5ff;
+    border: 1px solid #a5d8ff;
+    color: #1971c2;
+    border-radius: 6px;
+    cursor: pointer;
+    font-family: inherit;
+    font-weight: 600;
+  }
+  .card-actions button.spotlighting {
+    background: #ff8a80;
+    color: #fff;
+    border-color: #ff7268;
+  }
+  .card-actions button:hover { background: #a5d8ff; }
+  .card-actions button.spotlighting:hover { background: #ff7268; }
 
   /* ===== 앱 헤더 ===== */
   header {
@@ -812,7 +1515,7 @@
 
   /* ===== 헤더 우측 버튼들 ===== */
   #headerButtons { display: flex; gap: 6px; align-items: center; }
-  #saveBtn, #loadBtn, #resetBtn {
+  #saveBtn, #loadBtn, #resetBtn, #backToChooseBtn, #switchToFreeBtn, #rankingBtn {
     background: none; border: 1px solid #e0d5c8;
     color: #7a6a5a; font-size: 0.85em;
     padding: 6px 12px; border-radius: 8px;
@@ -823,6 +1526,12 @@
   #saveBtn:hover { background: #b2f2bb; }
   #loadBtn { background: #d0ebff; border-color: #a5d8ff; color: #1971c2; }
   #loadBtn:hover { background: #a5d8ff; }
+  #backToChooseBtn { background: #fff3bf; border-color: #ffe066; color: #a17c00; }
+  #backToChooseBtn:hover { background: #ffe066; }
+  #switchToFreeBtn { background: #e5dbff; border-color: #b197fc; color: #6741d9; }
+  #switchToFreeBtn:hover { background: #d0bfff; }
+  #switchToLessonBtn { background: #ffdeeb !important; border-color: #f783ac !important; color: #c2255c !important; }
+  #switchToLessonBtn:hover { background: #fcc2d7 !important; }
   #resetBtn:hover { background: #f7f0e8; }
   #saveBtn:disabled, #loadBtn:disabled { opacity: 0.5; cursor: wait; }
 
@@ -873,8 +1582,8 @@
 <div id="login">
   <button id="createClassBtn">🎓 코드 생성 (선생님)</button>
   <div class="box">
-    <h1>👋 디벗부 코딩교실</h1>
-    <p>반 코드와 이름을 입력해줘!</p>
+    <h1>👋 코딩교실</h1>
+    <p><b>HTML</b> 기반 코딩을 배우는 곳이야!<br>반 코드와 이름을 입력해줘.</p>
     <input id="classCodeInput" type="text" placeholder="반 코드" autocomplete="off">
     <input id="nameInput" type="text" placeholder="예: 홍길동 (성까지 적어줘)" autocomplete="off">
     <button id="startBtn" class="login-btn">로그인 🚀</button>
@@ -889,7 +1598,7 @@
     <p class="subtitle">반 정보와 학생 이름을 등록해줘</p>
 
     <label>반 이름</label>
-    <input id="classNameInput" type="text" placeholder="예: 5학년 디벗부">
+    <input id="classNameInput" type="text" placeholder="예: 5학년 1반">
 
     <label>선생님 이름</label>
     <input id="teacherNameInput" type="text" placeholder="예: 태윤">
@@ -927,7 +1636,143 @@
       <button id="deleteClassBtn">🗑️ 반 삭제</button>
     </div>
   </header>
+  <div id="timerRow">
+    <span id="timerDisplay">⏰ 타이머 설정 안 됨</span>
+    <div style="display:flex;gap:8px;flex-wrap:wrap;">
+      <button id="teacherViewRankingBtn">🏆 랭킹 크게 보기</button>
+      <button id="setTimerBtn">⏱️ 타이머 설정</button>
+    </div>
+  </div>
+  <div id="classStats"></div>
   <div id="studentGrid"></div>
+  <div id="rankingSection">
+    <h3>🏆 랭킹</h3>
+    <div class="rank-list" id="rankingList">
+      <div style="color:#a89a8c;text-align:center;padding:12px;">아직 완료한 학생이 없어요</div>
+    </div>
+  </div>
+</div>
+
+<!-- 타이머 설정 모달 -->
+<div id="timerSetModal" hidden>
+  <div class="modal-box">
+    <h2>⏱️ 세션 종료 시간 설정</h2>
+    <p style="color:#7a7a7a;margin-bottom:12px;">이 시간이 되면 타이머가 0이 돼</p>
+
+    <div class="timer-field">
+      <label>📅 날짜</label>
+      <input type="date" id="timerDate">
+    </div>
+
+    <div class="timer-field">
+      <label>🕐 오전/오후</label>
+      <div class="ampm-row">
+        <button type="button" class="ampm-btn" data-ampm="am">오전 (AM)</button>
+        <button type="button" class="ampm-btn" data-ampm="pm">오후 (PM)</button>
+      </div>
+    </div>
+
+    <div class="timer-field">
+      <label>⏰ 시간</label>
+      <div class="hm-row">
+        <input type="number" id="timerHour" min="1" max="12" value="10" inputmode="numeric">
+        <span>시</span>
+        <input type="number" id="timerMin" min="0" max="59" value="0" inputmode="numeric">
+        <span>분</span>
+      </div>
+    </div>
+
+    <div id="timerPreview" style="text-align:center;color:#1971c2;font-weight:700;margin:12px 0;font-size:0.95em;"></div>
+
+    <div class="modal-buttons">
+      <button id="timerSetClear">🗑️ 없애기</button>
+      <button id="timerSetCancel">취소</button>
+      <button id="timerSetOk">설정</button>
+    </div>
+  </div>
+</div>
+
+<!-- 코드 사전 모달 -->
+<div id="dictModal" hidden>
+  <div class="box">
+    <header>
+      <h2>📚 HTML 코드 사전 (클릭하면 코드에 넣어져)</h2>
+      <button id="dictCloseBtn">닫기 ✕</button>
+    </header>
+    <div class="dict-list" id="dictList"></div>
+  </div>
+</div>
+
+<!-- 랭킹 모달 (학생용 + 시간 종료 시 자동) -->
+<div id="rankingModal" hidden>
+  <div class="box">
+    <header>
+      <h2 id="rankingModalTitle">🏆 랭킹</h2>
+      <button id="rankingCloseBtn">닫기 ✕</button>
+    </header>
+    <div class="body">
+      <p id="rankingModalDesc" style="text-align:center;color:#7a7a7a;margin-bottom:12px;font-size:0.9em;">📚 코딩배우기 단계 완료한 순위야!</p>
+      <div id="rankingModalList" class="rank-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- 수료증 모달 -->
+<div id="certModal" hidden>
+  <div class="box">
+    <h2>🎉 축하해! 모든 단계 완료!</h2>
+    <p style="color:#7a7a7a;">아래 수료증을 다운로드해서 자랑해봐!</p>
+    <canvas id="certCanvas"></canvas>
+    <div class="btns">
+      <button id="certDownloadBtn">📥 수료증 다운로드</button>
+      <button id="certCloseBtn">닫기</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== 학생 모드 선택 화면 ===== -->
+<div id="studentChoose" hidden>
+  <div class="choose-box">
+    <h1 id="chooseWelcome">👋 안녕!</h1>
+    <p class="subtitle">뭐 할래?</p>
+    <button class="choose-btn recommended" id="lessonBtn">
+      <span class="recommended-badge">🌟 추천</span>
+      📚 코딩배우기
+      <small>1단계부터 차근차근, 미션 깨듯이! 🏆 <b>랭킹에도 포함돼!</b></small>
+    </button>
+    <button class="choose-btn free" id="freeBtn">
+      🎨 자유코딩
+      <small>내가 만들고 싶은 거 자유롭게 만들기 (랭킹 X)</small>
+    </button>
+    <button id="chooseLogoutBtn">🚪 로그아웃</button>
+  </div>
+</div>
+
+<!-- ===== 자유 코딩 화면 ===== -->
+<div id="freeCoding" hidden>
+  <header>
+    <h1>🎨 자유 코딩</h1>
+    <div class="free-btns">
+      <span id="freeStudentTimer" hidden>⏰ --:--</span>
+      <button id="freeBackBtn">← 메뉴</button>
+      <button id="switchToLessonBtn">📚 코딩배우기</button>
+      <button id="freeDictBtn">📚 사전</button>
+      <button id="freeRankingBtn">🏆 랭킹</button>
+    </div>
+  </header>
+  <main>
+    <section id="freeCodePanel">
+      <div class="label">✏️ 여기에 자유롭게 코드 써봐</div>
+      <div class="editor-wrap free-editor">
+        <pre class="highlight-overlay" aria-hidden="true"><code id="freeCodeOverlay"></code></pre>
+        <textarea id="freeCodeInput" spellcheck="false" autocapitalize="off" autocorrect="off" placeholder="예: <h1 style=&quot;color: hotpink;&quot;>내가 만든 페이지!</h1>"></textarea>
+      </div>
+    </section>
+    <section id="freePreviewPanel">
+      <div class="label">👀 결과</div>
+      <iframe id="freePreview"></iframe>
+    </section>
+  </main>
 </div>
 
 <!-- 학생 화면 크게 보기 -->
@@ -952,9 +1797,15 @@
 
 <!-- ===== 앱 ===== -->
 <header hidden>
-  <h1 id="pageTitle">🖥️ 디벗부 코딩교실</h1>
+  <h1 id="pageTitle">🖥️ 코딩교실</h1>
   <nav id="progress"></nav>
   <div id="headerButtons">
+    <span id="studentTimer" hidden>⏰ --:--</span>
+    <button id="backToChooseBtn">← 메뉴</button>
+    <button id="switchToFreeBtn">🎨 자유코딩하기</button>
+    <button id="dictBtn">📚 사전</button>
+    <button id="rankingBtn">🏆 랭킹</button>
+    <button id="helpBtn">🙋 도움 요청</button>
     <button id="saveBtn">💾 저장</button>
     <button id="loadBtn">📥 불러오기</button>
     <button id="resetBtn">🔄 처음부터</button>
@@ -985,7 +1836,10 @@
 
   <section id="codePanel">
     <div class="label">✏️ 여기에 코드를 써봐</div>
-    <textarea id="codeInput" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    <div class="editor-wrap">
+      <pre class="highlight-overlay" aria-hidden="true"><code id="codeOverlay"></code></pre>
+      <textarea id="codeInput" spellcheck="false" autocapitalize="off" autocorrect="off"></textarea>
+    </div>
   </section>
 
   <section id="previewPanel">
@@ -1004,6 +1858,32 @@
 <div id="celebrationMsg"></div>
 <div id="wrongMsg"></div>
 <div id="cloudToast"></div>
+
+<!-- 뱃지 획득 알림 -->
+<div id="badgeAward">
+  <div class="emoji" id="badgeAwardEmoji">🏆</div>
+  <div class="title" id="badgeAwardTitle"></div>
+  <div class="desc" id="badgeAwardDesc"></div>
+</div>
+
+<!-- 화면 브로드캐스트 모달 (학생용) -->
+<div id="broadcastModal" hidden>
+  <div class="box">
+    <header>
+      <h2 id="broadcastTitle">🎥 선생님이 화면 보여주고 있어요</h2>
+    </header>
+    <div class="body">
+      <div>
+        <div style="font-size:0.85em;color:#a89a8c;margin-bottom:6px;font-weight:700;">👀 화면</div>
+        <iframe id="broadcastPreview"></iframe>
+      </div>
+      <div>
+        <div style="font-size:0.85em;color:#a89a8c;margin-bottom:6px;font-weight:700;">✏️ 코드</div>
+        <pre id="broadcastCode"></pre>
+      </div>
+    </div>
+  </div>
+</div>
 
 <!-- 도전 미션 물어보는 모달 -->
 <div id="challengeModal" hidden>
@@ -1205,7 +2085,47 @@ let state = {
   currentStage: 0,
   completedStages: [],
   codes: {}, // stageId → code
-  roster: []           // 선생님용: 등록된 학생 이름 목록
+  roster: [],          // 선생님용: 등록된 학생 이름 목록
+  studentView: 'choose', // 학생용: 'choose' | 'lessons' | 'free'
+  freeCode: '',        // 자유 코딩 저장
+  badges: [],          // 획득한 뱃지 (stage id 배열)
+  needsHelp: false     // 도움 요청 상태
+};
+
+// ============================================
+// 코드 사전 (Snippet Dictionary)
+// ============================================
+const HTML_DICT = [
+  { name: '큰 제목 h1', desc: '가장 큰 글자', code: '<h1>큰 제목</h1>' },
+  { name: '중간 제목 h2', desc: '중간 크기 글자', code: '<h2>중간 제목</h2>' },
+  { name: '문단 p', desc: '보통 크기 글자', code: '<p>문단 내용</p>' },
+  { name: '굵게 b', desc: '진하게', code: '<b>굵은 글자</b>' },
+  { name: '줄바꿈 br', desc: '한 줄 내리기', code: '<br>' },
+  { name: '버튼 button', desc: '누르면 알림', code: '<button onclick="alert(\'안녕!\')">눌러봐</button>' },
+  { name: '리스트 ul/li', desc: '점 목록', code: '<ul>\n  <li>항목 1</li>\n  <li>항목 2</li>\n</ul>' },
+  { name: '번호 리스트 ol', desc: '숫자 목록', code: '<ol>\n  <li>첫번째</li>\n  <li>두번째</li>\n</ol>' },
+  { name: '이미지 img', desc: '그림 넣기', code: '<img src="여기에주소" width="200">' },
+  { name: '링크 a', desc: '누르면 이동', code: '<a href="https://claude.ai">여기 눌러</a>' },
+  { name: '상자 div', desc: '박스 만들기', code: '<div style="background: pink; padding: 20px;">상자 안</div>' },
+  { name: '글자 색깔', desc: 'style 속성', code: 'style="color: red;"' },
+  { name: '배경색', desc: 'style 속성', code: 'style="background-color: yellow;"' },
+  { name: '글자 크기', desc: 'style 속성', code: 'style="font-size: 40px;"' },
+  { name: '가운데 정렬', desc: 'style 속성', code: 'style="text-align: center;"' },
+  { name: '테두리', desc: 'style 속성', code: 'style="border: 3px solid blue; padding: 10px;"' },
+  { name: '이모지 크게', desc: '큰 이모지', code: '<h1 style="font-size: 100px;">🎉</h1>' },
+  { name: '그라데이션 배경', desc: '색 두 개 섞기', code: '<body style="background: linear-gradient(pink, skyblue);">\n  <h1>예쁜 배경!</h1>\n</body>' }
+];
+
+// ============================================
+// 뱃지 정의
+// ============================================
+const BADGES = {
+  1: { emoji: '🥇', name: 'HTML 초보자', desc: '첫 태그를 써봤어!' },
+  2: { emoji: '🎨', name: '색깔 마법사', desc: '색깔을 자유자재로!' },
+  3: { emoji: '🔘', name: '버튼 장인', desc: '움직이는 버튼 만듦!' },
+  4: { emoji: '🎁', name: '히든 발견자', desc: '숨겨진 단계 찾음!' },
+  5: { emoji: '📝', name: '리스트 마스터', desc: '리스트도 척척!' },
+  6: { emoji: '🌟', name: '창작왕', desc: '자유창작 완성!' }
 };
 
 function loadState() {
@@ -1234,15 +2154,18 @@ function getShortName(fullName) {
 // 화면 전환
 // ============================================
 function showScreen(screen) {
-  // 모든 화면 감추기
+  // 모든 화면 감추기 + 타이머 정지
   document.getElementById('login').hidden = true;
   document.getElementById('teacherSetup').hidden = true;
   document.getElementById('teacherDashboard').hidden = true;
+  document.getElementById('studentChoose').hidden = true;
+  document.getElementById('freeCoding').hidden = true;
   document.querySelector('header').hidden = true;
   document.getElementById('saveInfo').hidden = true;
   document.getElementById('previewBanner').hidden = true;
   document.querySelector('main').hidden = true;
   document.querySelector('footer').hidden = true;
+  stopTimerDisplay();
 
   if (screen === 'login') {
     document.getElementById('login').hidden = false;
@@ -1255,26 +2178,56 @@ function showScreen(screen) {
   } else if (screen === 'teacher') {
     document.getElementById('teacherDashboard').hidden = false;
     startTeacherPolling();
+    startTimerDisplay();
   } else if (screen === 'student') {
     document.querySelector('header').hidden = false;
     document.getElementById('saveInfo').hidden = false;
     document.querySelector('main').hidden = false;
     document.querySelector('footer').hidden = false;
     stopTeacherPolling();
-    // 저장/불러오기/처음부터 버튼 다시 보이게
+    startStudentPolling();
+    startTimerDisplay();
+    // 저장/불러오기/처음부터/메뉴/도움/자유코딩/사전 버튼 다시 보이게
     document.getElementById('saveBtn').style.display = '';
     document.getElementById('loadBtn').style.display = '';
     document.getElementById('resetBtn').style.display = '';
+    document.getElementById('backToChooseBtn').style.display = '';
+    document.getElementById('helpBtn').style.display = '';
+    document.getElementById('switchToFreeBtn').style.display = '';
+    document.getElementById('dictBtn').style.display = '';
+    document.getElementById('rankingBtn').style.display = '';
+    // 도움 요청 상태 반영
+    const helpBtn = document.getElementById('helpBtn');
+    if (state.needsHelp) { helpBtn.classList.add('active'); helpBtn.textContent = '🙋 도움 요청 중...'; }
+    else { helpBtn.classList.remove('active'); helpBtn.textContent = '🙋 도움 요청'; }
   } else if (screen === 'preview') {
     document.querySelector('header').hidden = false;
     document.getElementById('previewBanner').hidden = false;
     document.querySelector('main').hidden = false;
     document.querySelector('footer').hidden = false;
     stopTeacherPolling();
-    // 미리보기에서는 저장/불러오기/처음부터 버튼 숨김
+    stopStudentPolling();
+    // 미리보기에서는 저장/불러오기/처음부터/메뉴/도움/자유코딩 숨김 (사전은 미리보기에서도 유용해서 보임)
     document.getElementById('saveBtn').style.display = 'none';
     document.getElementById('loadBtn').style.display = 'none';
     document.getElementById('resetBtn').style.display = 'none';
+    document.getElementById('backToChooseBtn').style.display = 'none';
+    document.getElementById('helpBtn').style.display = 'none';
+    document.getElementById('switchToFreeBtn').style.display = 'none';
+    document.getElementById('dictBtn').style.display = '';
+    document.getElementById('rankingBtn').style.display = 'none';
+  } else if (screen === 'studentChoose') {
+    document.getElementById('studentChoose').hidden = false;
+    document.getElementById('studentChoose').style.display = 'flex';
+    renderStudentChoose();
+    stopTeacherPolling();
+    stopStudentPolling();
+  } else if (screen === 'freeCoding') {
+    document.getElementById('freeCoding').hidden = false;
+    initFreeCoding();
+    stopTeacherPolling();
+    startStudentPolling();
+    startTimerDisplay();
   }
 }
 
@@ -1388,14 +2341,22 @@ async function studentLogin() {
       if (typeof my.currentStage === 'number') state.currentStage = my.currentStage;
       if (Array.isArray(my.completedStages)) state.completedStages = my.completedStages;
       if (my.codes) state.codes = my.codes;
+      if (typeof my.freeCode === 'string') state.freeCode = my.freeCode;
+      if (Array.isArray(my.badges)) state.badges = my.badges;
+      if (my.stageCompletedAt) state.stageCompletedAt = my.stageCompletedAt;
+      state.needsHelp = !!my.needsHelp;
     } else {
       state.currentStage = 0;
       state.completedStages = [];
       state.codes = {};
+      state.freeCode = '';
+      state.badges = [];
+      state.needsHelp = false;
+      state.stageCompletedAt = {};
     }
+    state.studentView = 'choose';
     saveState();
-    showScreen('student');
-    render();
+    showScreen('studentChoose');
   } catch (err) {
     errorEl.textContent = '연결 실패ㅠㅠ: ' + err.message;
   } finally {
@@ -1411,6 +2372,97 @@ document.getElementById('createClassBtn').addEventListener('click', () => {
 });
 document.getElementById('backToLoginBtn').addEventListener('click', () => {
   showScreen('login');
+});
+
+// 학생 모드 선택 버튼
+document.getElementById('lessonBtn').addEventListener('click', () => {
+  state.studentView = 'lessons';
+  saveState();
+  showScreen('student');
+  render();
+});
+document.getElementById('freeBtn').addEventListener('click', () => {
+  state.studentView = 'free';
+  saveState();
+  showScreen('freeCoding');
+});
+document.getElementById('chooseLogoutBtn').addEventListener('click', () => {
+  state.mode = 'login';
+  state.classCode = '';
+  state.binId = '';
+  state.name = '';
+  state.studentView = 'choose';
+  saveState();
+  showScreen('login');
+});
+
+// 자유코딩 뒤로 (메뉴로)
+document.getElementById('freeBackBtn').addEventListener('click', async () => {
+  await saveToCloud(true).catch(() => {}); // 저장 먼저
+  state.studentView = 'choose';
+  saveState();
+  showScreen('studentChoose');
+  renderStudentChoose();
+});
+
+// 자유코딩 초기화 + 실시간 미리보기
+function initFreeCoding() {
+  const input = document.getElementById('freeCodeInput');
+  input.value = state.freeCode || '';
+  updateFreePreview();
+}
+function updateFreePreview() {
+  const input = document.getElementById('freeCodeInput');
+  const overlay = document.getElementById('freeCodeOverlay');
+  overlay.innerHTML = highlightHTMLCode(input.value);
+  const code = input.value;
+  state.freeCode = code;
+  saveState();
+  const doc = `<!DOCTYPE html><html><head><meta charset="UTF-8">
+<style>
+  body { font-family: -apple-system, 'Apple SD Gothic Neo', 'Malgun Gothic', sans-serif; padding: 16px; margin: 0; background: #fff; color: #333; }
+  .toast-alert { position: fixed; top: 20px; left: 50%; transform: translateX(-50%); background: #fff; padding: 14px 22px; border-radius: 12px; box-shadow: 0 6px 24px rgba(0,0,0,0.18); z-index: 99999; font-size: 18px; font-weight: 600; color: #333; border: 3px solid #4a9eff; max-width: 80%; text-align: center; }
+</style>
+</head><body>
+<script>
+  window.alert = function(msg) {
+    const div = document.createElement('div');
+    div.className = 'toast-alert';
+    div.textContent = String(msg);
+    document.body.appendChild(div);
+    setTimeout(function(){ div.style.opacity = '0'; div.style.transition = 'opacity 0.3s'; }, 2200);
+    setTimeout(function(){ div.remove(); }, 2600);
+  };
+<\/script>
+${code}</body></html>`;
+  document.getElementById('freePreview').srcdoc = doc;
+  // 자동저장 (학생 모드일 때만)
+  if (state.mode === 'student') scheduleAutoSave();
+}
+let freePreviewTimer;
+document.getElementById('freeCodeInput').addEventListener('input', () => {
+  const input = document.getElementById('freeCodeInput');
+  const overlay = document.getElementById('freeCodeOverlay');
+  overlay.innerHTML = highlightHTMLCode(input.value);
+  clearTimeout(freePreviewTimer);
+  freePreviewTimer = setTimeout(updateFreePreview, 150);
+});
+document.getElementById('freeCodeInput').addEventListener('scroll', () => {
+  const input = document.getElementById('freeCodeInput');
+  const overlay = document.getElementById('freeCodeOverlay');
+  overlay.parentElement.scrollTop = input.scrollTop;
+});
+// Tab 키 들여쓰기
+document.getElementById('freeCodeInput').addEventListener('keydown', (e) => {
+  if (e.key === 'Tab') {
+    e.preventDefault();
+    const input = document.getElementById('freeCodeInput');
+    const start = input.selectionStart;
+    const end = input.selectionEnd;
+    input.value = input.value.substring(0, start) + '  ' + input.value.substring(end);
+    input.selectionStart = input.selectionEnd = start + 2;
+    updateFreePreview();
+  }
 });
 
 // 미리보기 시작 (코드 생성 화면 안에서)
@@ -1610,11 +2662,12 @@ document.getElementById('createClassSubmit').addEventListener('click', async () 
 
 // 선생님 나가기
 document.getElementById('teacherLogoutBtn').addEventListener('click', () => {
-  if (!confirm('선생님 화면에서 나갈까? 반은 안 지워져.')) return;
+  // 반은 안 지워짐, 그냥 나가기
   stopTeacherPolling();
   state.mode = 'login';
   saveState();
   showScreen('login');
+  showCloudToast('👋 나갔어! 반은 안 지워짐', 'success');
 });
 
 // 반 코드 복사
@@ -1706,6 +2759,7 @@ const codeInput = document.getElementById('codeInput');
 const preview = document.getElementById('preview');
 
 function updatePreview() {
+  updateOverlay(codeInput, codeOverlay);
   const code = codeInput.value;
   const doc = `<!DOCTYPE html>
 <html><head><meta charset="UTF-8">
@@ -1783,8 +2837,43 @@ function checkForErrors(code) {
   }
 }
 
+// ============================================
+// Syntax Highlighting
+// ============================================
+function highlightHTMLCode(code) {
+  let s = escapeHtml(code);
+  // 문자열 (큰따옴표 안) — 먼저 처리
+  s = s.replace(/(&quot;[^&]*?&quot;)/g, '\x00STR\x01$1\x02');
+  s = s.replace(/(&#39;[^&]*?&#39;)/g, '\x00STR\x01$1\x02');
+  // 태그 열기/닫기
+  s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)/g,
+    '<span class="hl-punct">$1</span><span class="hl-tag">$2</span>');
+  // 속성 이름 (=앞)
+  s = s.replace(/([a-zA-Z][a-zA-Z0-9-]*)(=)/g,
+    '<span class="hl-attr">$1</span><span class="hl-punct">$2</span>');
+  // 닫는 꺾쇠
+  s = s.replace(/(&gt;)/g, '<span class="hl-punct">$1</span>');
+  // 문자열 마커 복원
+  s = s.replace(/\x00STR\x01([^\x02]*)\x02/g, '<span class="hl-string">$1</span>');
+  return s + '\n';
+}
+
+function updateOverlay(inputEl, overlayEl) {
+  overlayEl.innerHTML = highlightHTMLCode(inputEl.value);
+  // 스크롤 동기화
+  overlayEl.parentElement.scrollTop = inputEl.scrollTop;
+  overlayEl.parentElement.scrollLeft = inputEl.scrollLeft;
+}
+
+const codeOverlay = document.getElementById('codeOverlay');
+codeInput.addEventListener('scroll', () => {
+  codeOverlay.parentElement.scrollTop = codeInput.scrollTop;
+  codeOverlay.parentElement.scrollLeft = codeInput.scrollLeft;
+});
+
 let previewTimer;
 codeInput.addEventListener('input', () => {
+  updateOverlay(codeInput, codeOverlay);
   clearTimeout(previewTimer);
   previewTimer = setTimeout(updatePreview, 150);
   scheduleAutoSave();
@@ -1917,10 +3006,18 @@ document.getElementById('completeBtn').addEventListener('click', () => {
     return;
   }
 
-  // 정답 - 처음 완료 처리
+  // 정답 - 처음 완료 처리 + 뱃지 획득 + 완료 시간 기록
   if (!state.completedStages.includes(stage.id)) {
     state.completedStages.push(stage.id);
+    if (!state.stageCompletedAt) state.stageCompletedAt = {};
+    state.stageCompletedAt[stage.id] = new Date().toISOString();
+    awardBadge(stage.id);
     saveState();
+    saveToCloud(true).catch(() => {}); // 완료할 때마다 즉시 클라우드 저장
+    // 전체 완료 체크 → 수료증
+    if (state.completedStages.length >= STAGES.length) {
+      setTimeout(() => showCertificate(), 2500);
+    }
   }
 
   // 마지막(자유 창작) 단계면 도전 없이 축하만
@@ -2003,6 +3100,11 @@ async function saveToCloud(silent) {
       completedStages: state.completedStages,
       codes: state.codes,
       currentCode: document.getElementById('codeInput') ? document.getElementById('codeInput').value : '',
+      freeCode: state.freeCode || '',
+      badges: state.badges || [],
+      needsHelp: !!state.needsHelp,
+      studentView: state.studentView || 'choose',
+      stageCompletedAt: state.stageCompletedAt || {},
       savedAt: new Date().toISOString()
     };
 
@@ -2050,6 +3152,8 @@ async function loadFromCloud() {
     if (typeof myData.currentStage === 'number') state.currentStage = myData.currentStage;
     if (Array.isArray(myData.completedStages)) state.completedStages = myData.completedStages;
     if (myData.codes) state.codes = myData.codes;
+    if (typeof myData.freeCode === 'string') state.freeCode = myData.freeCode;
+    if (Array.isArray(myData.badges)) state.badges = myData.badges;
     saveState();
     render();
     showCloudToast('☁️ 불러왔어!', 'success');
@@ -2065,6 +3169,233 @@ async function loadFromCloud() {
 
 document.getElementById('saveBtn').addEventListener('click', () => saveToCloud(false));
 document.getElementById('loadBtn').addEventListener('click', loadFromCloud);
+document.getElementById('backToChooseBtn').addEventListener('click', async () => {
+  await saveToCloud(true).catch(() => {}); // 저장 먼저
+  state.studentView = 'choose';
+  saveState();
+  showScreen('studentChoose');
+  renderStudentChoose();
+});
+
+// 수업 → 자유코딩 전환
+document.getElementById('switchToFreeBtn').addEventListener('click', async () => {
+  await saveToCloud(true).catch(() => {}); // 저장 먼저
+  state.studentView = 'free';
+  saveState();
+  showScreen('freeCoding');
+  showCloudToast('☁️ 저장하고 자유코딩으로!', 'success');
+});
+
+// 자유코딩 → 수업 전환
+document.getElementById('switchToLessonBtn').addEventListener('click', async () => {
+  await saveToCloud(true).catch(() => {}); // 저장 먼저
+  state.studentView = 'lessons';
+  saveState();
+  showScreen('student');
+  render();
+  showCloudToast('☁️ 저장하고 코딩배우기로!', 'success');
+});
+
+// ============================================
+// 뱃지 획득
+// ============================================
+function awardBadge(stageId) {
+  if (!BADGES[stageId]) return;
+  if (!state.badges) state.badges = [];
+  if (state.badges.includes(stageId)) return;
+  state.badges.push(stageId);
+  const b = BADGES[stageId];
+  document.getElementById('badgeAwardEmoji').textContent = b.emoji;
+  document.getElementById('badgeAwardTitle').textContent = b.name + ' 획득!';
+  document.getElementById('badgeAwardDesc').textContent = b.desc;
+  const el = document.getElementById('badgeAward');
+  el.classList.add('show');
+  setTimeout(() => el.classList.remove('show'), 2200);
+}
+
+// 학생 선택 화면에 뱃지 표시
+function renderStudentChoose() {
+  document.getElementById('chooseWelcome').textContent = '👋 안녕, ' + (state.name || '') + '!';
+  // 이미 있으면 지우고 다시
+  const box = document.querySelector('#studentChoose .choose-box');
+  let badgeRow = box.querySelector('.badges-row');
+  if (badgeRow) badgeRow.remove();
+  if (state.badges && state.badges.length > 0) {
+    badgeRow = document.createElement('div');
+    badgeRow.className = 'badges-row';
+    state.badges.forEach(bid => {
+      const b = BADGES[bid];
+      if (!b) return;
+      const chip = document.createElement('span');
+      chip.className = 'badge';
+      chip.innerHTML = b.emoji + ' ' + b.name;
+      badgeRow.appendChild(chip);
+    });
+    box.appendChild(badgeRow);
+  }
+}
+
+// ============================================
+// 코드 사전
+// ============================================
+function openDict() {
+  const list = document.getElementById('dictList');
+  list.innerHTML = '';
+  HTML_DICT.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'dict-item';
+    div.innerHTML = `
+      <div class="dict-name">${escapeHtml(item.name)}</div>
+      <div class="dict-desc">${escapeHtml(item.desc)}</div>
+      <code class="dict-code">${escapeHtml(item.code)}</code>
+    `;
+    div.addEventListener('click', () => insertCode(item.code));
+    list.appendChild(div);
+  });
+  const m = document.getElementById('dictModal');
+  m.removeAttribute('hidden');
+  m.style.display = 'flex';
+}
+function closeDict() {
+  const m = document.getElementById('dictModal');
+  m.setAttribute('hidden', '');
+  m.style.display = 'none';
+}
+function insertCode(text) {
+  const target = state.studentView === 'free'
+    ? document.getElementById('freeCodeInput')
+    : document.getElementById('codeInput');
+  if (!target) return;
+  const start = target.selectionStart || 0;
+  const end = target.selectionEnd || 0;
+  target.value = target.value.substring(0, start) + text + target.value.substring(end);
+  target.selectionStart = target.selectionEnd = start + text.length;
+  target.focus();
+  target.dispatchEvent(new Event('input'));
+  closeDict();
+}
+document.getElementById('dictBtn').addEventListener('click', openDict);
+document.getElementById('freeDictBtn').addEventListener('click', openDict);
+document.getElementById('dictCloseBtn').addEventListener('click', closeDict);
+
+// ============================================
+// 수료증
+// ============================================
+function drawCertificate(name) {
+  const canvas = document.getElementById('certCanvas');
+  canvas.width = 1200;
+  canvas.height = 850;
+  const ctx = canvas.getContext('2d');
+
+  // 배경 그라데이션
+  const grad = ctx.createLinearGradient(0, 0, 1200, 850);
+  grad.addColorStop(0, '#fff9db');
+  grad.addColorStop(0.5, '#ffe8d6');
+  grad.addColorStop(1, '#ffd6c9');
+  ctx.fillStyle = grad;
+  ctx.fillRect(0, 0, 1200, 850);
+
+  // 이중 테두리
+  ctx.strokeStyle = '#ff8a80';
+  ctx.lineWidth = 10;
+  ctx.strokeRect(30, 30, 1140, 790);
+  ctx.strokeStyle = '#ffd43b';
+  ctx.lineWidth = 3;
+  ctx.strokeRect(50, 50, 1100, 750);
+
+  // 상단 장식
+  ctx.font = '80px sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('🏆', 600, 160);
+
+  // 제목
+  ctx.font = 'bold 70px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.fillStyle = '#c92a2a';
+  ctx.fillText('수 료 증', 600, 250);
+
+  // 본문
+  ctx.font = '32px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.fillStyle = '#3a3a3a';
+  ctx.fillText('위 학생은 코딩교실의 모든 단계를', 600, 360);
+  ctx.fillText('훌륭하게 완료하였음을 증명합니다.', 600, 410);
+
+  // 이름
+  ctx.font = 'bold 90px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.fillStyle = '#ff8a80';
+  ctx.fillText(name, 600, 560);
+
+  // 밑줄
+  ctx.strokeStyle = '#ff8a80';
+  ctx.lineWidth = 3;
+  const nw = ctx.measureText(name).width;
+  ctx.beginPath();
+  ctx.moveTo(600 - nw/2 - 20, 580);
+  ctx.lineTo(600 + nw/2 + 20, 580);
+  ctx.stroke();
+
+  // 뱃지 이모지들
+  ctx.font = '55px sans-serif';
+  ctx.fillText('🥇  🎨  🔘  🎁  📝  🌟', 600, 660);
+
+  // 날짜
+  ctx.font = '26px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.fillStyle = '#666';
+  const d = new Date();
+  const dateStr = d.getFullYear() + '년 ' + (d.getMonth() + 1) + '월 ' + d.getDate() + '일';
+  ctx.fillText(dateStr, 600, 730);
+
+  // 서명
+  ctx.font = '22px "Malgun Gothic", "Apple SD Gothic Neo", sans-serif';
+  ctx.fillStyle = '#a89a8c';
+  ctx.fillText('🖥️ 코딩교실', 600, 770);
+}
+
+function showCertificate() {
+  const modal = document.getElementById('certModal');
+  modal.removeAttribute('hidden');
+  modal.style.display = 'flex';
+  drawCertificate(state.name || '이름');
+}
+function hideCertificate() {
+  const modal = document.getElementById('certModal');
+  modal.setAttribute('hidden', '');
+  modal.style.display = 'none';
+}
+document.getElementById('certCloseBtn').addEventListener('click', hideCertificate);
+document.getElementById('certDownloadBtn').addEventListener('click', () => {
+  const canvas = document.getElementById('certCanvas');
+  try {
+    const url = canvas.toDataURL('image/png');
+    const a = document.createElement('a');
+    a.download = '수료증_' + (state.name || 'student') + '.png';
+    a.href = url;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    showCloudToast('📥 다운로드 완료! (아이패드는 이미지 새 창으로 뜸)', 'success');
+  } catch(e) {
+    showCloudToast('다운로드 실패: ' + e.message, 'error');
+  }
+});
+
+// ============================================
+// 도움 요청
+// ============================================
+document.getElementById('helpBtn').addEventListener('click', async () => {
+  state.needsHelp = !state.needsHelp;
+  const btn = document.getElementById('helpBtn');
+  if (state.needsHelp) {
+    btn.classList.add('active');
+    btn.textContent = '🙋 도움 요청 중...';
+    showCloudToast('🙋 선생님한테 도움 요청했어!', 'success');
+  } else {
+    btn.classList.remove('active');
+    btn.textContent = '🙋 도움 요청';
+    showCloudToast('도움 요청 취소', 'success');
+  }
+  saveState();
+  await saveToCloud(true);
+});
 
 // ============================================
 // 자동저장 (학생이 코드 칠 때마다)
@@ -2074,6 +3405,54 @@ function scheduleAutoSave() {
   if (state.mode !== 'student') return;
   if (autoSaveTimer) clearTimeout(autoSaveTimer);
   autoSaveTimer = setTimeout(() => { saveToCloud(true); }, 2000);
+}
+
+// ============================================
+// 학생 폴링 (선생님 브로드캐스트 감지)
+// ============================================
+let studentPollTimer = null;
+function startStudentPolling() {
+  stopStudentPolling();
+  checkBroadcast();
+  studentPollTimer = setInterval(checkBroadcast, 5000);
+}
+function stopStudentPolling() {
+  if (studentPollTimer) { clearInterval(studentPollTimer); studentPollTimer = null; }
+}
+async function checkBroadcast() {
+  if (state.mode !== 'student' || !state.binId) return;
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) return;
+    const gj = await res.json();
+    const data = gj.record || {};
+    // 세션 종료 시간 업데이트
+    state.sessionEndTime = data.sessionEndTime || null;
+    const spotlight = data.spotlight;
+    const modal = document.getElementById('broadcastModal');
+
+    if (spotlight && spotlight.studentName && spotlight.studentName !== state.name) {
+      // 다른 학생 화면 보여주기
+      const target = data.students && data.students[spotlight.studentName];
+      const tv = target ? (target.studentView || 'lessons') : 'lessons';
+      let code = '';
+      if (target) {
+        if (tv === 'free') code = target.freeCode || '';
+        else code = target.currentCode || (target.codes && target.codes[STAGES[target.currentStage] && STAGES[target.currentStage].id]) || '';
+      }
+      document.getElementById('broadcastTitle').textContent = '🎥 선생님이 ' + spotlight.studentName + ' 화면 보여주고 있어요';
+      document.getElementById('broadcastCode').textContent = code || '(아직 코드 없음)';
+      document.getElementById('broadcastPreview').srcdoc = wrapStudentPreview(code);
+      modal.removeAttribute('hidden');
+      modal.style.display = 'flex';
+    } else {
+      // 공유 없음 → 닫기
+      modal.setAttribute('hidden', '');
+      modal.style.display = 'none';
+    }
+  } catch(e) {}
 }
 
 // ============================================
@@ -2114,10 +3493,19 @@ function renderTeacherDashboard() {
   document.getElementById('dashboardCode').textContent = state.classCode;
   document.getElementById('dashboardCount').textContent = (state.roster || []).length;
 
+  // 타이머 UI 업데이트
+  updateTimerDisplay();
+
+  // 반 진행 상황 요약
+  renderClassStats();
+  // 랭킹
+  renderRanking();
+
   const grid = document.getElementById('studentGrid');
   grid.innerHTML = '';
   const students = (teacherCache && teacherCache.students) || {};
   const roster = state.roster || (teacherCache && teacherCache.roster) || [];
+  const spotlight = (teacherCache && teacherCache.spotlight) || null;
 
   roster.forEach(name => {
     const s = students[name];
@@ -2142,17 +3530,47 @@ function renderTeacherDashboard() {
       stageText = (stg ? stg.title : '') + ' · 완료 ' + done + '/' + totalStages;
     }
 
+    if (s && s.needsHelp) card.classList.add('needs-help');
+
+    // 뱃지 미니 표시
+    let badgesMini = '';
+    if (s && Array.isArray(s.badges) && s.badges.length > 0) {
+      badgesMini = '<div class="badges-in-card">' +
+        s.badges.map(bid => BADGES[bid] ? `<span class="badge-mini" title="${escapeHtml(BADGES[bid].name)}">${BADGES[bid].emoji}</span>` : '').join('') +
+        '</div>';
+    }
+
     card.innerHTML = `
       <div class="top">
         <div class="name">${escapeHtml(name)}</div>
         <div class="status ${statusClass}">${statusText}</div>
       </div>
       <div class="stage-info">${escapeHtml(stageText)}</div>
+      ${badgesMini}
     `;
 
-    if (s && (s.currentCode || (s.codes && Object.keys(s.codes).length > 0))) {
+    // 도움 요청 뱃지
+    if (s && s.needsHelp) {
+      const helpBadge = document.createElement('div');
+      helpBadge.className = 'help-badge';
+      helpBadge.textContent = '🙋 도움!';
+      helpBadge.addEventListener('click', async (e) => {
+        e.stopPropagation();
+        await dismissHelp(name);
+      });
+      card.appendChild(helpBadge);
+    }
+
+    // 학생이 현재 보고 있는 화면의 코드 (자유 or 수업)
+    const view = s ? (s.studentView || 'lessons') : 'lessons';
+    let currentCode = '';
+    if (s) {
+      if (view === 'free') currentCode = s.freeCode || '';
+      else currentCode = s.currentCode || (s.codes && s.codes[STAGES[s.currentStage] && STAGES[s.currentStage].id]) || '';
+    }
+
+    if (s && currentCode) {
       const iframe = document.createElement('iframe');
-      const currentCode = s.currentCode || (s.codes && s.codes[STAGES[s.currentStage] && STAGES[s.currentStage].id]) || '';
       iframe.srcdoc = wrapStudentPreview(currentCode);
       card.appendChild(iframe);
     } else {
@@ -2162,9 +3580,386 @@ function renderTeacherDashboard() {
       card.appendChild(nd);
     }
 
+    // 공유 버튼
+    const actions = document.createElement('div');
+    actions.className = 'card-actions';
+    const shareBtn = document.createElement('button');
+    const isSpotlighted = spotlight && spotlight.studentName === name;
+    if (isSpotlighted) {
+      shareBtn.classList.add('spotlighting');
+      shareBtn.textContent = '🛑 공유 끄기';
+    } else {
+      shareBtn.textContent = '📢 화면 공유';
+    }
+    shareBtn.addEventListener('click', async (e) => {
+      e.stopPropagation();
+      await toggleSpotlight(isSpotlighted ? null : name);
+    });
+    actions.appendChild(shareBtn);
+    card.appendChild(actions);
+
     card.addEventListener('click', () => openStudentZoom(name, s));
     grid.appendChild(card);
   });
+}
+
+// 반 진행 상황 계산 & 표시
+function renderClassStats() {
+  const students = (teacherCache && teacherCache.students) || {};
+  const roster = state.roster || [];
+  const totalStages = STAGES.length;
+  let done = 0, active = 0, idle = 0, help = 0;
+  roster.forEach(name => {
+    const s = students[name];
+    if (!s) { idle++; return; }
+    const compCount = (s.completedStages || []).length;
+    if (compCount >= totalStages) done++;
+    else if (compCount > 0 || s.currentCode) active++;
+    else idle++;
+    if (s.needsHelp) help++;
+  });
+  let html = `👥 총 ${roster.length}명`;
+  if (done > 0) html += ` · <span class="stat done">✅ ${done}명 완료</span>`;
+  if (active > 0) html += ` · <span class="stat active">💻 ${active}명 진행 중</span>`;
+  if (idle > 0) html += ` · <span class="stat idle">⏸ ${idle}명 시작 안 함</span>`;
+  if (help > 0) html += ` · <span class="stat help">🙋 ${help}명 도움 요청</span>`;
+  document.getElementById('classStats').innerHTML = html;
+}
+
+// 랭킹 계산 (재사용 가능)
+function computeRanking(data) {
+  const students = (data && data.students) || {};
+  // roster를 소스로 사용, 없으면 학생 데이터에서 이름 추출
+  const roster = (data && data.roster) || Object.keys(students);
+  const ranked = roster.map(name => {
+    const s = students[name] || {};
+    const completedStages = s.completedStages || [];
+    const lastCompletedAt = s.stageCompletedAt && Object.keys(s.stageCompletedAt).length > 0
+      ? Math.max(...Object.values(s.stageCompletedAt).map(t => new Date(t).getTime()))
+      : Infinity;
+    return {
+      name,
+      done: completedStages.length,
+      lastAt: lastCompletedAt,
+      badges: s.badges || []
+    };
+  }).filter(r => r.done > 0);
+
+  ranked.sort((a, b) => {
+    if (b.done !== a.done) return b.done - a.done;
+    return a.lastAt - b.lastAt;
+  });
+  return ranked;
+}
+
+function renderRankInto(listEl, ranked, myName) {
+  if (ranked.length === 0) {
+    listEl.innerHTML = '<div style="color:#a89a8c;text-align:center;padding:12px;">아직 완료한 학생이 없어요</div>';
+    return;
+  }
+  listEl.innerHTML = '';
+  ranked.slice(0, 10).forEach((r, i) => {
+    const rank = i + 1;
+    const item = document.createElement('div');
+    item.className = 'rank-item' + (rank <= 3 ? ' rank-' + rank : '');
+    if (myName && r.name === myName) item.style.outline = '3px solid #4a9eff';
+    const medal = rank === 1 ? '🥇' : rank === 2 ? '🥈' : rank === 3 ? '🥉' : '🏅';
+    const timeStr = isFinite(r.lastAt)
+      ? new Date(r.lastAt).toLocaleTimeString('ko-KR', { hour: '2-digit', minute: '2-digit' })
+      : '';
+    const meMarker = (myName && r.name === myName) ? ' <span style="color:#4a9eff;font-weight:700;">(나)</span>' : '';
+    item.innerHTML = `
+      <div class="rank-num">${medal} ${rank}</div>
+      <div class="rank-name">${escapeHtml(r.name)}${meMarker}</div>
+      <div class="rank-info">${r.done}단계 완료${timeStr ? ' · ' + timeStr : ''}</div>
+    `;
+    listEl.appendChild(item);
+  });
+}
+
+// 선생님 대시보드용 랭킹 렌더
+function renderRanking() {
+  const ranked = computeRanking(teacherCache);
+  renderRankInto(document.getElementById('rankingList'), ranked, null);
+}
+
+// 학생 랭킹 모달 (버튼 눌러서 볼 때)
+async function showRankingModal(isFinal) {
+  if (!state.binId) {
+    showCloudToast('연결이 안 되어 있어', 'error');
+    return;
+  }
+  try {
+    const res = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!res.ok) throw new Error('불러오기 실패');
+    const gj = await res.json();
+    const data = gj.record || {};
+    const ranked = computeRanking(data);
+    renderRankInto(document.getElementById('rankingModalList'), ranked, state.name);
+    const modal = document.getElementById('rankingModal');
+    const title = document.getElementById('rankingModalTitle');
+    const desc = document.getElementById('rankingModalDesc');
+    if (isFinal) {
+      title.textContent = '🎊 시간 종료! 최종 랭킹 🏆';
+      desc.textContent = '수고했어! 배운 단계 순위야.';
+    } else {
+      title.textContent = '🏆 지금 랭킹';
+      desc.textContent = '📚 코딩배우기 단계 완료한 순위야! (자유코딩은 랭킹 안 됨)';
+    }
+    modal.removeAttribute('hidden');
+    modal.style.display = 'flex';
+  } catch(e) {
+    showCloudToast('랭킹 불러오기 실패: ' + e.message, 'error');
+  }
+}
+
+document.getElementById('rankingBtn').addEventListener('click', () => showRankingModal(false));
+document.getElementById('freeRankingBtn').addEventListener('click', () => showRankingModal(false));
+document.getElementById('teacherViewRankingBtn').addEventListener('click', () => showRankingModal(false));
+document.getElementById('rankingCloseBtn').addEventListener('click', () => {
+  const modal = document.getElementById('rankingModal');
+  modal.setAttribute('hidden', '');
+  modal.style.display = 'none';
+});
+
+// 도움 요청 해제 (선생님이 응답)
+async function dismissHelp(studentName) {
+  if (!state.binId) return;
+  try {
+    const gr = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!gr.ok) return;
+    const gd = await gr.json();
+    const current = gd.record || {};
+    if (current.students && current.students[studentName]) {
+      current.students[studentName].needsHelp = false;
+    }
+    await fetch('https://api.jsonbin.io/v3/b/' + state.binId, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY
+      },
+      body: JSON.stringify(current)
+    });
+    fetchAndRenderStudents();
+  } catch(e) {}
+}
+
+// ============================================
+// 세션 타이머
+// ============================================
+let timerDisplayInterval = null;
+
+function startTimerDisplay() {
+  stopTimerDisplay();
+  updateTimerDisplay();
+  timerDisplayInterval = setInterval(updateTimerDisplay, 1000);
+}
+function stopTimerDisplay() {
+  if (timerDisplayInterval) { clearInterval(timerDisplayInterval); timerDisplayInterval = null; }
+}
+
+let sessionEndFiredForTime = null; // 어느 endTime에 대해 이미 종료 이벤트 냈는지
+
+function updateTimerDisplay() {
+  const endTime = (teacherCache && teacherCache.sessionEndTime) || (state.sessionEndTime);
+  const displayEl = document.getElementById('timerDisplay');
+  const studentEl = document.getElementById('studentTimer');
+  const freeStudentEl = document.getElementById('freeStudentTimer');
+  const row = document.getElementById('timerRow');
+
+  if (!endTime) {
+    if (displayEl) displayEl.textContent = '⏰ 타이머 설정 안 됨';
+    if (row) row.className = '';
+    if (studentEl) studentEl.hidden = true;
+    if (freeStudentEl) freeStudentEl.hidden = true;
+    sessionEndFiredForTime = null;
+    return;
+  }
+
+  const remaining = new Date(endTime).getTime() - Date.now();
+  let text;
+  let cls = '';
+  if (remaining <= 0) {
+    text = '⏰ 시간 종료!';
+    cls = 'over';
+    // 아직 이 endTime에 대해 종료 이벤트 안 냈으면 발동
+    if (sessionEndFiredForTime !== endTime) {
+      sessionEndFiredForTime = endTime;
+      onSessionEnd();
+    }
+  } else {
+    const totalSec = Math.floor(remaining / 1000);
+    const min = Math.floor(totalSec / 60);
+    const sec = totalSec % 60;
+    text = `⏰ 남은 시간 ${min}:${String(sec).padStart(2,'0')}`;
+    if (remaining < 60000) cls = 'urgent';
+    else if (remaining < 5 * 60000) cls = 'warning';
+  }
+
+  if (displayEl) displayEl.textContent = text;
+  if (row) row.className = cls;
+  if (studentEl) { studentEl.hidden = false; studentEl.textContent = text; studentEl.className = cls; }
+  if (freeStudentEl) { freeStudentEl.hidden = false; freeStudentEl.textContent = text; freeStudentEl.className = cls; }
+}
+
+// 시간 종료 시 자동으로 최종 랭킹 띄우기
+function onSessionEnd() {
+  // 학생이든 선생님이든 최종 랭킹 모달 표시
+  if (state.mode === 'student' || state.mode === 'teacher') {
+    setTimeout(() => showRankingModal(true), 300);
+  }
+}
+
+// 타이머 설정 모달
+let selectedAmPm = 'am';
+function updateAmPmButtons() {
+  document.querySelectorAll('.ampm-btn').forEach(b => {
+    if (b.dataset.ampm === selectedAmPm) b.classList.add('selected');
+    else b.classList.remove('selected');
+  });
+  updateTimerPreview();
+}
+document.querySelectorAll('.ampm-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    selectedAmPm = b.dataset.ampm;
+    updateAmPmButtons();
+  });
+});
+document.getElementById('timerHour').addEventListener('input', updateTimerPreview);
+document.getElementById('timerMin').addEventListener('input', updateTimerPreview);
+document.getElementById('timerDate').addEventListener('change', updateTimerPreview);
+
+function updateTimerPreview() {
+  const end = readTimerFields();
+  const preview = document.getElementById('timerPreview');
+  if (!end) { preview.textContent = ''; return; }
+  const remaining = end.getTime() - Date.now();
+  if (remaining <= 0) {
+    preview.textContent = '⚠️ 이미 지난 시간이야!';
+    preview.style.color = '#c92a2a';
+  } else {
+    const min = Math.floor(remaining / 60000);
+    const dateStr = end.toLocaleDateString('ko-KR', { month: 'long', day: 'numeric', weekday: 'short' });
+    const timeStr = (selectedAmPm === 'am' ? '오전 ' : '오후 ') + document.getElementById('timerHour').value + '시 ' + String(document.getElementById('timerMin').value).padStart(2, '0') + '분';
+    preview.textContent = '📅 ' + dateStr + ' ' + timeStr + ' 까지 (' + Math.floor(min/60) + '시간 ' + (min%60) + '분 남음)';
+    preview.style.color = '#1971c2';
+  }
+}
+
+function readTimerFields() {
+  const dateStr = document.getElementById('timerDate').value; // YYYY-MM-DD
+  let hour = parseInt(document.getElementById('timerHour').value, 10);
+  const min = parseInt(document.getElementById('timerMin').value, 10);
+  if (isNaN(hour) || isNaN(min) || !dateStr) return null;
+  if (hour < 1 || hour > 12 || min < 0 || min > 59) return null;
+  // 12시간 → 24시간 변환
+  if (selectedAmPm === 'am') {
+    if (hour === 12) hour = 0; // 오전 12시 = 자정 = 0시
+  } else {
+    if (hour !== 12) hour += 12; // 오후 12시 = 정오 = 12시, 그 외는 +12
+  }
+  const [y, m, d] = dateStr.split('-').map(Number);
+  const end = new Date(y, m - 1, d, hour, min, 0, 0);
+  return end;
+}
+
+document.getElementById('setTimerBtn').addEventListener('click', () => {
+  const m = document.getElementById('timerSetModal');
+  m.removeAttribute('hidden');
+  m.style.display = 'flex';
+  // 기본값: 지금+40분
+  const def = new Date(Date.now() + 40 * 60000);
+  const y = def.getFullYear();
+  const mo = String(def.getMonth() + 1).padStart(2, '0');
+  const da = String(def.getDate()).padStart(2, '0');
+  document.getElementById('timerDate').value = y + '-' + mo + '-' + da;
+  let h24 = def.getHours();
+  const mm = def.getMinutes();
+  selectedAmPm = h24 < 12 ? 'am' : 'pm';
+  let h12 = h24 % 12;
+  if (h12 === 0) h12 = 12;
+  document.getElementById('timerHour').value = h12;
+  document.getElementById('timerMin').value = mm;
+  updateAmPmButtons();
+});
+document.getElementById('timerSetCancel').addEventListener('click', () => {
+  const m = document.getElementById('timerSetModal');
+  m.setAttribute('hidden', ''); m.style.display = 'none';
+});
+document.getElementById('timerSetClear').addEventListener('click', async () => {
+  await setSessionEndTime(null);
+  const m = document.getElementById('timerSetModal');
+  m.setAttribute('hidden', ''); m.style.display = 'none';
+});
+document.getElementById('timerSetOk').addEventListener('click', async () => {
+  const end = readTimerFields();
+  if (!end) {
+    showCloudToast('시간을 제대로 입력해줘! (시: 1-12, 분: 0-59)', 'error');
+    return;
+  }
+  if (end.getTime() < Date.now()) {
+    // 지난 시간이면 그냥 경고만 (미리보기에 이미 표시됨)
+    showCloudToast('⚠️ 이미 지난 시간이라 바로 종료돼!', 'error');
+  }
+  await setSessionEndTime(end.toISOString());
+  const m = document.getElementById('timerSetModal');
+  m.setAttribute('hidden', ''); m.style.display = 'none';
+});
+
+async function setSessionEndTime(iso) {
+  if (!state.binId) return;
+  try {
+    const gr = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!gr.ok) return;
+    const gd = await gr.json();
+    const current = gd.record || {};
+    current.sessionEndTime = iso;
+    await fetch('https://api.jsonbin.io/v3/b/' + state.binId, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json', 'X-Master-Key': JSONBIN_KEY },
+      body: JSON.stringify(current)
+    });
+    teacherCache = current;
+    updateTimerDisplay();
+    showCloudToast(iso ? '⏱️ 타이머 설정됨!' : '⏱️ 타이머 없앰', 'success');
+  } catch(e) {
+    showCloudToast('실패: ' + e.message, 'error');
+  }
+}
+
+// 화면 공유 (spotlight) 켜기/끄기
+async function toggleSpotlight(studentName) {
+  if (!state.binId) return;
+  try {
+    const gr = await fetch('https://api.jsonbin.io/v3/b/' + state.binId + '/latest', {
+      headers: { 'X-Master-Key': JSONBIN_KEY }
+    });
+    if (!gr.ok) return;
+    const gd = await gr.json();
+    const current = gd.record || {};
+    if (studentName) {
+      current.spotlight = { studentName: studentName, setAt: new Date().toISOString() };
+    } else {
+      current.spotlight = null;
+    }
+    await fetch('https://api.jsonbin.io/v3/b/' + state.binId, {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Master-Key': JSONBIN_KEY
+      },
+      body: JSON.stringify(current)
+    });
+    teacherCache = current;
+    renderTeacherDashboard();
+  } catch(e) {}
 }
 
 function wrapStudentPreview(code) {
@@ -2180,8 +3975,14 @@ function openStudentZoom(name, s) {
   const modal = document.getElementById('studentZoomModal');
   modal.removeAttribute('hidden');
   modal.style.display = 'flex';
-  document.getElementById('zoomTitle').textContent = '👀 ' + name + '의 화면';
-  const currentCode = (s && (s.currentCode || (s.codes && s.codes[STAGES[s.currentStage] && STAGES[s.currentStage].id]))) || '';
+  const view = s ? (s.studentView || 'lessons') : 'lessons';
+  let currentCode = '';
+  if (s) {
+    if (view === 'free') currentCode = s.freeCode || '';
+    else currentCode = s.currentCode || (s.codes && s.codes[STAGES[s.currentStage] && STAGES[s.currentStage].id]) || '';
+  }
+  const viewLabel = view === 'free' ? '(자유코딩)' : '(수업)';
+  document.getElementById('zoomTitle').textContent = '👀 ' + name + '의 화면 ' + viewLabel;
   document.getElementById('zoomCode').textContent = currentCode || '(아직 코드 없음)';
   document.getElementById('zoomPreview').srcdoc = wrapStudentPreview(currentCode);
 }
@@ -2252,8 +4053,15 @@ if (state.mode === 'teacher' && state.binId) {
   showScreen('teacher');
   renderTeacherDashboard();
 } else if (state.mode === 'student' && state.binId && state.name) {
-  showScreen('student');
-  render();
+  // 마지막으로 있던 학생 화면 복원
+  if (state.studentView === 'free') {
+    showScreen('freeCoding');
+  } else if (state.studentView === 'lessons') {
+    showScreen('student');
+    render();
+  } else {
+    showScreen('studentChoose');
+  }
 } else {
   state.mode = 'login';
   showScreen('login');
