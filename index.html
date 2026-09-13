@@ -6,31 +6,28 @@
 <title>코딩교실</title>
 <style>
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  /* hidden 속성은 언제나 다른 display를 이겨야 함 (선생님 화면에서 학생용 UI 안 뜨게) */
+  [hidden] { display: none !important; }
   html, body {
-    height: 100%;
+    height: auto;
+    min-height: 100%;
     font-family: -apple-system, BlinkMacSystemFont, 'Apple SD Gothic Neo', 'Malgun Gothic', 'Noto Sans KR', sans-serif;
     font-size: 17px;
     background: #fdf6f0;
     color: #3a3a3a;
     -webkit-text-size-adjust: 100%;
-    overflow: hidden;
+    overflow-x: hidden;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
   }
-  body { display: flex; flex-direction: column; height: 100vh; }
+  body {
+    display: block;
+    min-height: 100vh;
+    height: auto;
+  }
 
-  /* 좁은 화면(아이패드 등)에서 스크롤 허용 - 강력하게 */
-  @media (max-width: 1100px) {
-    html, body {
-      height: auto !important;
-      min-height: 100% !important;
-      overflow-x: hidden !important;
-      overflow-y: auto !important;
-      -webkit-overflow-scrolling: touch;
-    }
-    body {
-      display: block !important;
-      height: auto !important;
-      min-height: 100vh !important;
-    }
+  /* 모든 태블릿/아이패드/폰 - 세로 쌓기 레이아웃 */
+  @media (max-width: 1400px) {
     /* 수업 main - 블록으로 쌓기 */
     body > main {
       display: block !important;
@@ -77,8 +74,12 @@
     /* 헤더 버튼들 wrap */
     #headerButtons { flex-wrap: wrap !important; }
     header { flex-wrap: wrap !important; }
-    /* 푸터 */
     footer { flex-wrap: wrap !important; }
+  }
+  /* 아주 큰 데스크톱 (>1400px)에서만 3분할 유지 */
+  @media (min-width: 1401px) {
+    body { display: flex; flex-direction: column; height: 100vh; }
+    html, body { overflow: hidden; height: 100%; }
   }
 
   /* ===== 로그인 모달 ===== */
@@ -1858,10 +1859,10 @@
 <div id="certModal" hidden>
   <div class="box">
     <h2>🎉 축하해! 모든 단계 완료!</h2>
-    <p style="color:#7a7a7a;">아래 수료증을 다운로드해서 자랑해봐!</p>
+    <p style="color:#7a7a7a;font-size:0.9em;">📷 아래 이미지를 <b>손가락으로 길게 눌러</b> "이미지 저장"을 누르면 사진 앱에 저장돼!<br>또는 아래 <b>[📥 사진에 저장]</b> 버튼 누르면 공유 창이 뜸.</p>
     <canvas id="certCanvas"></canvas>
     <div class="btns">
-      <button id="certDownloadBtn">📥 수료증 다운로드</button>
+      <button id="certDownloadBtn">📥 사진에 저장</button>
       <button id="certCloseBtn">닫기</button>
     </div>
   </div>
@@ -3721,19 +3722,59 @@ document.getElementById('remainingChallengeNo').addEventListener('click', () => 
   // catch-up 모드 종료
   inCatchUpMode = false;
 });
-document.getElementById('certDownloadBtn').addEventListener('click', () => {
+document.getElementById('certDownloadBtn').addEventListener('click', async () => {
   const canvas = document.getElementById('certCanvas');
+  const filename = '수료증_' + (state.name || 'student') + '.png';
+
+  // 방법 1: iPad/iOS - Web Share API로 사진 앱에 저장 (가장 확실)
+  try {
+    const blob = await new Promise((resolve, reject) => {
+      canvas.toBlob(b => b ? resolve(b) : reject(new Error('blob 생성 실패')), 'image/png');
+    });
+    if (navigator.share && navigator.canShare) {
+      const file = new File([blob], filename, { type: 'image/png' });
+      if (navigator.canShare({ files: [file] })) {
+        try {
+          await navigator.share({ files: [file], title: '내 수료증' });
+          showCloudToast('📷 사진 앱에 저장하려면 공유 창에서 "이미지 저장" 눌러!', 'success');
+          return;
+        } catch(shareErr) {
+          if (shareErr.name === 'AbortError') return; // 사용자가 취소
+        }
+      }
+    }
+  } catch(e) {}
+
+  // 방법 2: 새 창에 이미지 열기 (아이패드 폴백)
+  try {
+    const url = canvas.toDataURL('image/png');
+    // 새 창에 크게 띄우기
+    const html = '<!DOCTYPE html><html><head><title>수료증</title><meta name="viewport" content="width=device-width,initial-scale=1"></head>' +
+      '<body style="margin:0;padding:20px;background:#333;text-align:center;">' +
+      '<p style="color:#fff;font-size:16px;margin-bottom:12px;font-family:sans-serif;">📷 <b>이미지 길게 눌러서 "사진에 저장"</b> 하면 사진 앱에 저장돼!</p>' +
+      '<img src="' + url + '" style="max-width:100%;height:auto;border-radius:8px;background:#fff;">' +
+      '</body></html>';
+    const newTab = window.open('', '_blank');
+    if (newTab) {
+      newTab.document.write(html);
+      newTab.document.close();
+      showCloudToast('📷 새 창에서 이미지 길게 눌러 "사진에 저장"!', 'success');
+      return;
+    }
+  } catch(e) {}
+
+  // 방법 3: <a download> (데스크톱)
   try {
     const url = canvas.toDataURL('image/png');
     const a = document.createElement('a');
-    a.download = '수료증_' + (state.name || 'student') + '.png';
+    a.download = filename;
     a.href = url;
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
-    showCloudToast('📥 다운로드 완료! (아이패드는 이미지 새 창으로 뜸)', 'success');
+    showCloudToast('📥 다운로드 폴더에 저장됨!', 'success');
   } catch(e) {
-    showCloudToast('다운로드 실패: ' + e.message, 'error');
+    showCloudToast('저장 실패ㅠㅠ 수료증 이미지 위에 손가락 길게 눌러봐', 'error');
   }
 });
 
