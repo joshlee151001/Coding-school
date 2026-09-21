@@ -1530,6 +1530,81 @@
   #resetNo { background: #a5d8ff; color: #1971c2; }
   #resetNo:hover { background: #74c0fc; }
 
+  /* ===== iOS 스타일 문자 알림 (선생님용) ===== */
+  #iosNotifStack {
+    position: fixed;
+    top: 16px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 500;
+    width: 92%;
+    max-width: 420px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    pointer-events: none;
+  }
+  .ios-notif {
+    background: rgba(245, 245, 247, 0.92);
+    -webkit-backdrop-filter: blur(20px);
+    backdrop-filter: blur(20px);
+    border-radius: 18px;
+    padding: 12px 14px;
+    box-shadow: 0 10px 40px rgba(0, 0, 0, 0.25);
+    color: #000;
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'Apple SD Gothic Neo', sans-serif;
+    transform: translateY(-120%);
+    opacity: 0;
+    transition: transform 0.5s cubic-bezier(0.34, 1.56, 0.64, 1), opacity 0.4s;
+    cursor: pointer;
+    pointer-events: auto;
+  }
+  .ios-notif.show {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  .ios-notif.hiding {
+    transform: translateY(-120%);
+    opacity: 0;
+  }
+  .ios-notif-head {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 4px;
+  }
+  .ios-notif-icon {
+    width: 24px; height: 24px;
+    background: linear-gradient(135deg, #ff8a80 0%, #ffb3ba 100%);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px;
+    flex-shrink: 0;
+  }
+  .ios-notif-appname {
+    font-size: 13px;
+    font-weight: 500;
+    color: rgba(60, 60, 67, 0.75);
+    flex: 1;
+    letter-spacing: -0.1px;
+  }
+  .ios-notif-time {
+    font-size: 12px;
+    color: rgba(60, 60, 67, 0.6);
+  }
+  .ios-notif-title {
+    font-size: 15px;
+    font-weight: 700;
+    margin-bottom: 2px;
+    letter-spacing: -0.2px;
+  }
+  .ios-notif-body {
+    font-size: 15px;
+    color: rgba(0, 0, 0, 0.85);
+    letter-spacing: -0.2px;
+    line-height: 1.3;
+  }
+
   /* 남은 도전미션 모달 */
   #remainingChallengeModal {
     position: fixed; inset: 0;
@@ -2004,6 +2079,9 @@
 <div id="celebrationMsg"></div>
 <div id="wrongMsg"></div>
 <div id="cloudToast"></div>
+
+<!-- iOS 스타일 문자 알림 (선생님용) -->
+<div id="iosNotifStack"></div>
 
 <!-- 뱃지 획득 알림 -->
 <div id="badgeAward">
@@ -2838,13 +2916,7 @@ document.getElementById('createClassSubmit').addEventListener('click', async () 
   btn.disabled = true;
   btn.textContent = '만드는 중...';
   try {
-    // 이미 있는 코드인지 확인
-    const existing = await findBinByClassCode(customCode).catch(() => null);
-    if (existing) {
-      errorEl.textContent = '이미 있는 코드야! 다른 코드로 해줘.';
-      return;
-    }
-
+    // 중복 체크 스킵 (JSONBin list 느려서 안 만들어짐. 그냥 만들면 됨)
     const res = await fetch('https://api.jsonbin.io/v3/b', {
       method: 'POST',
       headers: {
@@ -2874,6 +2946,20 @@ document.getElementById('createClassSubmit').addEventListener('click', async () 
     state.teacherName = teacherName;
     state.teacherHonorific = selectedHonorific;
     state.roster = setupRoster.slice();
+    // URL에 class + bin 둘 다 붙이기 → 학생이 이 URL 열면 로그인 즉시 됨
+    try {
+      if (window.history && window.history.replaceState) {
+        const newUrl = window.location.pathname + '?class=' + customCode + '&bin=' + binId;
+        window.history.replaceState({}, '', newUrl);
+      }
+    } catch(e) {}
+    // URL에 class + bin 둘 다 붙이기 → 학생이 이 URL 열면 로그인 즉시 됨
+    try {
+      if (window.history && window.history.replaceState) {
+        const newUrl = window.location.pathname + '?class=' + customCode + '&bin=' + binId;
+        window.history.replaceState({}, '', newUrl);
+      }
+    } catch(e) {}
     saveState();
     // 코드→binId 캐시 저장
     localStorage.setItem('dibut_code_' + customCode, binId);
@@ -2902,12 +2988,15 @@ document.getElementById('teacherLogoutBtn').addEventListener('click', () => {
   showCloudToast('👋 나갔어! 반은 안 지워짐', 'success');
 });
 
-// 반 코드 복사
+// 반 코드 복사 → URL 통째로 복사 (학생이 이 URL 열면 로그인 즉시 됨)
 document.getElementById('dashboardCodeShare').addEventListener('click', async () => {
   const code = state.classCode;
+  const binId = state.binId;
+  const shareUrl = window.location.origin + window.location.pathname +
+    '?class=' + code + (binId ? '&bin=' + binId : '');
   try {
-    await navigator.clipboard.writeText(code);
-    showCloudToast('📋 코드 복사됨!', 'success');
+    await navigator.clipboard.writeText(shareUrl);
+    showCloudToast('📋 학생용 링크 복사됨! (붙여넣어서 알려주기)', 'success');
   } catch (e) {
     showCloudToast('코드: ' + code, 'success');
   }
@@ -3073,36 +3162,84 @@ function checkForErrors(code) {
 // Syntax Highlighting
 // ============================================
 function highlightHTMLCode(code) {
-  let s = escapeHtml(code);
-  // 마커 방식: 스팬을 직접 넣으면 나중에 정규식이 스팬 내부(class= 등)를 잘못 매칭함
-  // 그래서 스팬을 마커로 저장해두고 마지막에 한꺼번에 치환
-  const markers = [];
-  const mark = (html) => {
-    markers.push(html);
-    return '\x00M' + (markers.length - 1) + '\x01';
+  // 한 글자씩 진짜 파서로 처리 (마커 방식은 브라우저가 특수문자 자를 수 있어서 위험)
+  code = String(code || '');
+  const out = [];
+  let i = 0;
+  const len = code.length;
+  const wrap = (cls, text) => {
+    if (!text) return;
+    if (cls) out.push('<span class="' + cls + '">' + escapeHtml(text) + '</span>');
+    else out.push(escapeHtml(text));
   };
+  const isNameChar = (c) => /[a-zA-Z0-9-]/.test(c);
+  const isTagChar = (c) => /[a-zA-Z0-9]/.test(c);
 
-  // 1. 문자열 (큰따옴표/작은따옴표 안) — 먼저 처리
-  s = s.replace(/(&quot;[^&]*?&quot;|&#39;[^&]*?&#39;)/g, (m) =>
-    mark('<span class="hl-string">' + m + '</span>')
-  );
-  // 2. 태그 열기/닫기 (<태그, </태그)
-  s = s.replace(/(&lt;\/?)([a-zA-Z][a-zA-Z0-9]*)/g, (m, punct, tag) =>
-    mark('<span class="hl-punct">' + punct + '</span>') +
-    mark('<span class="hl-tag">' + tag + '</span>')
-  );
-  // 3. 속성 이름 (word=)
-  s = s.replace(/([a-zA-Z][a-zA-Z0-9-]*)(=)/g, (m, attr, eq) =>
-    mark('<span class="hl-attr">' + attr + '</span>') +
-    mark('<span class="hl-punct">' + eq + '</span>')
-  );
-  // 4. 닫는 꺾쇠 (>)
-  s = s.replace(/(&gt;)/g, (m) =>
-    mark('<span class="hl-punct">' + m + '</span>')
-  );
-  // 마커 복원
-  s = s.replace(/\x00M(\d+)\x01/g, (_, idx) => markers[Number(idx)]);
-  return s + '\n';
+  while (i < len) {
+    if (code[i] === '<') {
+      const tagOpenStart = i;
+      i++;
+      if (code[i] === '/') i++;
+      // 태그 이름
+      const nameStart = i;
+      while (i < len && isTagChar(code[i])) i++;
+      const nameEnd = i;
+      // 태그 이름이 없으면 그냥 텍스트로 처리
+      if (nameEnd === nameStart) {
+        wrap('', '<');
+        i = tagOpenStart + 1;
+        continue;
+      }
+      wrap('hl-punct', code.slice(tagOpenStart, nameStart));
+      wrap('hl-tag', code.slice(nameStart, nameEnd));
+      // 속성 파싱
+      while (i < len && code[i] !== '>' && code[i] !== '<') {
+        // 공백
+        const wsStart = i;
+        while (i < len && /\s/.test(code[i])) i++;
+        if (i > wsStart) wrap('', code.slice(wsStart, i));
+        if (i >= len || code[i] === '>' || code[i] === '<') break;
+        // 속성 이름
+        if (/[a-zA-Z]/.test(code[i])) {
+          const attrStart = i;
+          while (i < len && isNameChar(code[i])) i++;
+          wrap('hl-attr', code.slice(attrStart, i));
+          // = 값
+          if (code[i] === '=') {
+            wrap('hl-punct', '=');
+            i++;
+            if (code[i] === '"' || code[i] === "'") {
+              const q = code[i];
+              const vStart = i;
+              i++;
+              while (i < len && code[i] !== q) i++;
+              if (code[i] === q) i++;
+              wrap('hl-string', code.slice(vStart, i));
+            } else {
+              const vStart = i;
+              while (i < len && !/[\s>]/.test(code[i]) && code[i] !== '<') i++;
+              if (i > vStart) wrap('hl-string', code.slice(vStart, i));
+            }
+          }
+        } else {
+          // 알 수 없는 문자 - 그냥 텍스트로
+          wrap('', code[i]);
+          i++;
+        }
+      }
+      // > 닫기
+      if (code[i] === '>') {
+        wrap('hl-punct', '>');
+        i++;
+      }
+    } else {
+      // 일반 텍스트: 다음 < 까지
+      const tStart = i;
+      while (i < len && code[i] !== '<') i++;
+      wrap('', code.slice(tStart, i));
+    }
+  }
+  return out.join('') + '\n';
 }
 
 function updateOverlay(inputEl, overlayEl) {
@@ -3965,6 +4102,10 @@ function stopTeacherPolling() {
   }
 }
 
+// 이전에 본 각 학생의 needsHelp 상태 (새 요청 감지용)
+const prevHelpState = {};
+let helpNotifInitialized = false;
+
 async function fetchAndRenderStudents() {
   if (!state.binId) return;
   try {
@@ -3974,8 +4115,94 @@ async function fetchAndRenderStudents() {
     if (!res.ok) return;
     const result = await res.json();
     const data = result.record || {};
+
+    // 🍎 iOS 스타일 문자 알림: 새로 도움 요청한 학생 감지
+    const students = data.students || {};
+    Object.keys(students).forEach(name => {
+      const nowHelp = !!students[name].needsHelp;
+      const prevHelp = !!prevHelpState[name];
+      // 첫 폴링 때는 알림 안 뜨게 (기존 요청은 조용히 세팅)
+      if (helpNotifInitialized && nowHelp && !prevHelp) {
+        showIosNotification(name);
+      }
+      prevHelpState[name] = nowHelp;
+    });
+    helpNotifInitialized = true;
+
     teacherCache = data;
     renderTeacherDashboard();
+  } catch(e) {}
+}
+
+// iOS 문자 알림 띄우기
+function showIosNotification(studentName) {
+  const stack = document.getElementById('iosNotifStack');
+  const notif = document.createElement('div');
+  notif.className = 'ios-notif';
+  const now = new Date();
+  const timeStr = now.getHours() + ':' + String(now.getMinutes()).padStart(2, '0');
+  notif.innerHTML = `
+    <div class="ios-notif-head">
+      <div class="ios-notif-icon">🖥️</div>
+      <div class="ios-notif-appname">코딩교실</div>
+      <div class="ios-notif-time">지금</div>
+    </div>
+    <div class="ios-notif-title">🙋 ${escapeHtml(studentName)}</div>
+    <div class="ios-notif-body">도움이 필요해요!</div>
+  `;
+  notif.addEventListener('click', () => dismissIosNotification(notif));
+  stack.appendChild(notif);
+  // 애니메이션 시작
+  requestAnimationFrame(() => {
+    requestAnimationFrame(() => notif.classList.add('show'));
+  });
+  // 소리 재생
+  playNotificationSound();
+  // 5초 후 자동 사라짐
+  setTimeout(() => dismissIosNotification(notif), 5000);
+}
+
+function dismissIosNotification(notif) {
+  if (!notif || notif.classList.contains('hiding')) return;
+  notif.classList.remove('show');
+  notif.classList.add('hiding');
+  setTimeout(() => notif.remove(), 500);
+}
+
+// 알림 소리 (Web Audio API로 iOS 알림 비슷하게)
+let audioCtx = null;
+// 첫 사용자 클릭 때 audioCtx 초기화 (아이패드 Safari가 사용자 상호작용 필요)
+document.addEventListener('click', () => {
+  if (!audioCtx) {
+    try {
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    } catch(e) {}
+  }
+}, { once: true });
+
+function playNotificationSound() {
+  try {
+    if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    // iOS "Tri-tone" 스타일: 세 음이 빠르게 (도-미-솔)
+    const notes = [
+      { freq: 1046, start: 0.00, dur: 0.14 }, // C6
+      { freq: 1318, start: 0.10, dur: 0.14 }, // E6
+      { freq: 1568, start: 0.20, dur: 0.20 }  // G6
+    ];
+    notes.forEach(n => {
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.value = n.freq;
+      const t0 = audioCtx.currentTime + n.start;
+      gain.gain.setValueAtTime(0, t0);
+      gain.gain.linearRampToValueAtTime(0.15, t0 + 0.01);
+      gain.gain.exponentialRampToValueAtTime(0.001, t0 + n.dur);
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+      osc.start(t0);
+      osc.stop(t0 + n.dur);
+    });
   } catch(e) {}
 }
 
@@ -4532,10 +4759,15 @@ function celebrate() {
 // ============================================
 loadState();
 
-// URL에 반 코드 있으면 로그인 화면에 자동으로 채워주기
+// URL에 반 코드/bin 있으면 자동 채우기 + bin 캐시 → 로그인 빨라짐
 try {
   const params = new URLSearchParams(window.location.search);
   const urlCode = params.get('class');
+  const urlBin = params.get('bin');
+  if (urlCode && urlBin) {
+    // 캐시에 저장 → findBinByClassCode가 리스트 조회 안 하고 바로 씀
+    localStorage.setItem('dibut_code_' + urlCode, urlBin);
+  }
   if (urlCode) {
     document.getElementById('classCodeInput').value = urlCode;
   }
